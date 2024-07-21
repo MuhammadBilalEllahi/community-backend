@@ -9,6 +9,15 @@ async function getUserData(access_token) {
     //console.log('response',response);
     const data = await response.json();
     console.log('data', data);
+
+
+    console.log("The HD is ", data.hd)
+    if (data.email.includes("@cuilahore.edu.pk") && data.hd === 'cuilahore.edu.pk') {
+        console.log("CUI Lahore")
+    }
+    else {
+        console.log("Only CUI domains can login in")
+    }
 }
 
 
@@ -33,6 +42,8 @@ const getOAuthClient = async (req, res, next) => {
         const user = oAuth2Client.credentials;
         console.log('credentials', user);
         await getUserData(oAuth2Client.credentials.access_token);
+
+
 
     } catch (err) {
         console.log('Error logging in with OAuth2 user', err);

@@ -1,9 +1,11 @@
 const express = require("express")
+const { signupR, updateInfoR } = require("../controllers/auth.controller")
 
 const router = express.Router()
 
 
-
+router.post("/signup", signupR)
+router.put("/registered/update-info", updateInfoR)
 
 
 router.post("/login", async (req, res) => {

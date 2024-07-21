@@ -15,7 +15,10 @@ const mongoDB = require("./db/connect.mongodb.js")
 
 app.use(cookieParser())
 app.use(morgan("dev"))
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}))
 
 
 dotenv.config()
@@ -37,5 +40,6 @@ app.use('/request', requestRoute);
 
 
 app.listen(PORT, () => {
+    mongoDB()
     console.log(`Server Running on ${PORT}`)
 })

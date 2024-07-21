@@ -1,41 +1,98 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    fullName: {
+    name: {
         type: String,
-        required: true
-    },
-    personalEmail: {
-        type: String,
-        required: true,
-        unique: true
     },
     universityEmail: {
         type: String,
-        required: true,
-        unique: true
+        required: function () {
+            return !this.personalEmail;
+        },
+        match: [
+            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/,
+            "Please fill a valid email address",
+        ],
+    },
+    personalEmail: {
+        type: String,
+        required: function () {
+            return !this.universityEmail;
+        },
+        match: [
+            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/,
+            "Please fill a valid email address",
+        ],
+    },
+    phoneNumber: {
+        type: String,
+        match: [/^\d{10,15}$/, "Please fill a valid phone number"],
+    },
+    universityEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    secondaryPersonalEmail: {
+        type: String,
+        match: [
+            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/,
+            "Please fill a valid email address",
+        ],
+    },
+    secondaryPersonalEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    universityEmailExpirationDate: {
+        type: Date,
     },
     username: {
         type: String,
         unique: true,
-        required: true
     },
     password: {
         type: String,
         required: true,
-        minLength: 6
     },
     gender: {
         type: String,
-        enum: ["male", "female"]
+        enum: ["male", "female"],
     },
     profilePic: {
         type: String,
+        default: "",
+    },
+    token: {
+        type: String,
         default: ''
-    }
-}, {
-    timestamps: true
-})
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
 
-const User = mongoose.model("User", userSchema)
+userSchema.pre("save", async function (next) {
+    // if (!this.username) {
+
+    //     let generatedUsername = this.name.toLowerCase().replace(/\s+/g, '_');
+    //     let usernameExists = await mongoose.models.User.findOne({ username: generatedUsername });
+    //     let suffix = 1;
+    //     while (usernameExists) {
+    //         generatedUsername = `${this.name.toLowerCase().replace(/\s+/g, '_')}_${suffix}`;
+    //         usernameExists = await mongoose.models.User.findOne({ username: generatedUsername });
+    //         suffix++;
+    //     }
+    //     this.username = generatedUsername;
+    // }
+    this.updatedAt = Date.now();
+    next();
+});
+
+const User = mongoose.model("User", userSchema);
+
 module.exports = User;
