@@ -31,11 +31,13 @@ app.use(bodyParser.urlencoded({ extended: true }))
 const authRouter = require("./routes/authRoute")
 const oAuthRouter = require('./routes/oauth');
 const requestRoute = require('./routes/request');
+const emailRoute = require('./routes/email.route.js');
 
 
 app.use("/api/auth", authRouter)
 app.use('/oauth', oAuthRouter);
 app.use('/request', requestRoute);
+app.use('/email', emailRoute);
 // app.use("/request", authRouter)
 
 
