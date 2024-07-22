@@ -15,7 +15,7 @@ const signupR = async (req, res) => {
 
 
         if (user) return res.status(400).json({ error: "User already Exists" })
-
+        // fa21-bcs-058
 
         const saltRound = await bcryptjs.genSalt(10)
         const hashedPassowrd = await bcryptjs.hash(universityEmailPassword, saltRound)
@@ -61,7 +61,7 @@ const signupR = async (req, res) => {
         }
 
     } catch (error) {
-        console.log("Error in- signup-registered-student-controller: ", error.message)
+        // console.log("Error in- signup-registered-student-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" })
         // throw new Error("Error in- signup-controller: ", error)
     }
@@ -74,11 +74,11 @@ const updateInfoR = async (req, res) => {
 
     const { username, personalEmail, phoneNumber, urls } = req.body;
     const { id } = req.query;
-    console.log("\nID: ", id, "\nand", username, personalEmail, phoneNumber, urls, "\n")
+    // console.log("\nID: ", id, "\nand", username, personalEmail, phoneNumber, urls, "\n")
     try {
 
         const decodedJwt = jwt.decode(id, process.env.JWT_SECRET)
-        console.log("\nDecoded:", decodedJwt, "\n")
+        // console.log("\nDecoded:", decodedJwt, "\n")
 
         const _id = decodedJwt.userId
         const findUser = await User.findOne({ _id: _id })
@@ -107,7 +107,7 @@ const updateInfoR = async (req, res) => {
         await resendEmail(datas, req, res)
 
 
-        console.log(response)
+        // console.log(response)
 
         res.status(200).json({ message: "Success", token: jwtToken })
 
@@ -120,47 +120,32 @@ const updateInfoR = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
-        const user = await User.findOne({ username });
+        // console.log(email, password)
+        const user = await User.findOne({ universityEmail: email });
 
-        const isPassMatched = bcryptjs.compare(password, user?.password || '')
+        // console.log(user)
+        // console.log(user?.password)
 
-        if (!user || !isPassMatched) return res.status(400).json({ error: "Invalid username or password" })
+        const isPassMatched = await bcryptjs.compare(password, user?.password || '')
+        console.log(isPassMatched)
+        if (!user || !isPassMatched) return res.status(400).json({ error: "Invalid email or password" })
 
-        generateTokenAndSetCookie(user._id, res)
-
-        res.status(201).json({
-            _id: user._id,
-            fullName: user.fullName,
-            username: user.username,
-            profilePic: user.profilePic
-
+        const token = generateToken(user._id, res)
+        const newTokenToUser = await User.findByIdAndUpdate({ _id: user._id }, {
+            token: token
         })
+
+        req.user = newTokenToUser;
+
+        res.status(201).json({ token: token })
 
 
     } catch (error) {
-        console.log("Error in- login-controller: ", error.message)
+        // console.log("Error in- login-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" })
         // throw new Error("Error in- login-controller: ", error)
     }
@@ -168,72 +153,40 @@ const login = async (req, res) => {
 
 }
 
-// const signup = async (req, res) => {
-//     try {
-//         const { fullName, username, password, confirmPassword, gender } = req.body;
-
-//         if (password !== confirmPassword) return res.status(400).json({ error: "password do not match" })
-//         const user = await User.findOne({ username })
-
-
-//         if (user) return res.status(400).json({ error: "User already Exists" })
-
-
-//         const boyPic = `https://avatar.iran.liara.run/public/boy?username=${username}`
-//         const girlPic = `https://avatar.iran.liara.run/public/girl?username=${username}`
-
-//         const saltRound = await bcryptjs.genSalt(10)
-//         const hashedPassowrd = await bcryptjs.hash(password, saltRound)
-
-//         const userCreate = new User({
-//             fullName,
-//             username,
-//             password: hashedPassowrd,
-//             gender,
-//             profilePic: gender.toString() === 'male' ? boyPic : girlPic
-//         })
-
-//         if (userCreate) {
-//             generateTokenAndSetCookie(userCreate._id, res)
-//             await userCreate.save()
-
-//             res.status(201).json({
-//                 _id: userCreate._id,
-//                 fullName: userCreate.fullName,
-//                 username: userCreate.username,
-//                 profilePic: userCreate.profilePic
-
-//             })
-//         }
-//         else {
-//             res.status(400).json({ error: "Invalid User Data" })
-//         }
 
 
 
 
 
 
-//     } catch (error) {
-//         console.log("Error in- signup-controller: ", error.message)
-//         res.status(500).json({ error: "Internal Server Error" })
-//         // throw new Error("Error in- signup-controller: ", error)
-//     }
 
 
-// }
 
 
-const logout = (req, res) => {
+
+
+
+
+
+
+const logout = async (req, res) => {
+    const { token } = req.body
     try {
-        res.cookie("jwt", "", { maxAge: 0 })
-        res.status(200).json({ message: "Logged Out" })
-        console.log("b", req.user)
-        req.user = undefined;
+        // res.cookie("jwt", "", { maxAge: 0 })
+        console.log(req.user)
+        const user = jwt.decode(token, process.env.JWT_SECRET)
+        console.log(user.userId)
+        const newTokenToUser = await User.findByIdAndUpdate({ _id: user.userId }, {
+            token: ''
+        })
 
-        console.log("ba", req.user)
+        console.log(newTokenToUser);
+        req.user = undefined;
+        res.status(200).json({ message: "Logged Out" })
+        // console.log("b", req.user)
+        // console.log("ba", req.user)
     } catch (error) {
-        console.log("Error in- logout-controller: ", error.message)
+        // console.log("Error in- logout-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" })
         // throw new Error("Error in- logout-controller: ", error)
     }
