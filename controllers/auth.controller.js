@@ -131,7 +131,7 @@ const login = async (req, res) => {
         // console.log(user?.password)
 
         const isPassMatched = await bcryptjs.compare(password, user?.password || '')
-        console.log(isPassMatched)
+        // console.log(isPassMatched)
         if (!user || !isPassMatched) return res.status(400).json({ error: "Invalid email or password" })
 
         const token = generateToken(user._id, res)
@@ -167,30 +167,142 @@ const login = async (req, res) => {
 
 
 
-
-
 const logout = async (req, res) => {
-    const { token } = req.body
+    const { token } = req.body;
     try {
         // res.cookie("jwt", "", { maxAge: 0 })
-        console.log(req.user)
+        // console.log(req.user)
         const user = jwt.decode(token, process.env.JWT_SECRET)
-        console.log(user.userId)
-        const newTokenToUser = await User.findByIdAndUpdate({ _id: user.userId }, {
-            token: ''
-        })
+        console.log("The user", user)
+        console.log("The token", token)
+        if (user) {
+            fetch(`https://oauth2.googleapis.com/userinfo?token=${token}`)
+                .then(async (userIn) => {
+                    const email = user.email;
+                    console.log("here", email)
 
-        console.log(newTokenToUser);
-        req.user = undefined;
-        res.status(200).json({ message: "Logged Out" })
-        // console.log("b", req.user)
-        // console.log("ba", req.user)
+                    const allowedDomains = ["cuilahore", "cuiislamabad", "cuiabbottabad"];
+                    const domainPattern = allowedDomains.join('|');
+                    const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
+
+                    console.log("\nhere: 0", email, universityEmailRegex.test(email))
+                    const regEx_Bool = universityEmailRegex.test(email)
+                    let isFoundUser;
+                    if (regEx_Bool) {
+                        isFoundUser = await User.findOne({ universityEmail: email })
+                        console.log("\nhere: 1 ", isFoundUser)
+                    } else {
+                        isFoundUser = await User.findOne({ personalEmail: email })
+                        console.log("\nhere: 2 ", isFoundUser)
+                    }
+                    const access_token = isFoundUser.access_token;
+                    console.log("User is", isFoundUser)
+                    fetch(`https://www.googleapis.com/oauth2/v1/revoke?access_token=${access_token}`)
+                        .then(async (dataIn) => {
+                            console.log("Here to revoke")
+                            if (regEx_Bool) {
+                                isFoundUser = await User.findOneAndUpdate({ universityEmail: email }, {
+                                    token: '', refresh_token: '', access_token: '',
+                                })
+                                console.log("Here to revoke uni email", isFoundUser)
+                            } else {
+                                isFoundUser = await User.findOneAndUpdate({ personalEmail: email }, {
+                                    token: '', refresh_token: '', access_token: '',
+                                })
+                                console.log("Here to revoke personal email", isFoundUser)
+                            }
+
+                            return res.status(200).json({ "message": "logged out" })
+                        }).catch(e => {
+                            res.status(400).json({ "error": e })
+                        })
+
+                    // return res.status(200).json({ "message": "logged out" })
+                })
+                .catch(e => {
+                    return res.status(404).json({ "error": e })
+                })
+        }
+        console.log("The user id", user.email)
+
+        // req.user = undefined;
+        // res.status(200).json({ message: "Logged Out" })
+
     } catch (error) {
         // console.log("Error in- logout-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" })
         // throw new Error("Error in- logout-controller: ", error)
     }
 }
+
+
+// const logout = async (req, res) => {
+//     const { token } = req.body;
+//     try {
+//         // res.cookie("jwt", "", { maxAge: 0 })
+//         // console.log(req.user)
+//         const user = jwt.decode(token, process.env.JWT_SECRET)
+//         console.log(user)
+//         console.log(token)
+//         if (!user) {
+//             fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`).then((user) => {
+//                 console.log("Log out data: ", user)
+//                 fetch(`https://oauth2.googleapis.com/revoke?token=${token}`,
+//                     {
+//                         method: "POST",
+//                         headers: {
+//                             "Content-type": "application/x-www-form-urlencoded"
+//                         }
+//                     }
+//                 ).then(async (data) => {
+//                     const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
+//                     console.log("The data ", data);
+//                     const email = data.email
+//                     try {
+//                         if (user.email.test(universityEmailRegex)) {
+//                             const newTokenToUser = await User.findByIdAndUpdate({ universityEmail: email }, {
+//                                 token: ''
+//                             })
+//                             console.log("Uni", newTokenToUser)
+//                         } else {
+//                             const newTokenToUser = await User.findByIdAndUpdate({ personalEmail: email }, {
+//                                 token: ''
+//                             })
+//                             console.log("Not Uni", newTokenToUser)
+//                         }
+//                         return res.status(200).json({ message: "Logged Out" })
+//                     } catch (error) {
+//                         return res.status(404).json({ "error": error })
+//                     }
+
+//                     return res.status(200).json("ok")
+//                 }).catch(e => {
+//                     return res.status(404).json({ "error": e })
+//                 })
+//             }).catch(e => {
+//                 return res.status(404).json({ "error": e })
+//             })
+
+
+//         }
+//         console.log(user.userId)
+//         const newTokenToUser = await User.findByIdAndUpdate({ _id: user.userId }, {
+//             token: ''
+//         })
+
+//         console.log(newTokenToUser);
+//         req.user = undefined;
+//         res.status(200).json({ message: "Logged Out" })
+//         // console.log("b", req.user)
+//         // console.log("ba", req.user)
+//     } catch (error) {
+//         // console.log("Error in- logout-controller: ", error.message)
+//         res.status(500).json({ error: "Internal Server Error" })
+//         // throw new Error("Error in- logout-controller: ", error)
+//     }
+// }
+
+
 
 
 

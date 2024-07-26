@@ -45,3 +45,9 @@ app.listen(PORT, () => {
     mongoDB()
     console.log(`Server Running on ${PORT}`)
 })
+
+
+console.log(!(!false || !true))
+console.log(!(!true || !false))
+console.log(!(!false || !false))
+console.log(!(!true || !true))

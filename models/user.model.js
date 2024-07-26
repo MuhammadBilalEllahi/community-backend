@@ -24,14 +24,7 @@ const userSchema = new mongoose.Schema({
             "Please fill a valid email address",
         ],
     },
-    phoneNumber: {
-        type: String,
-        match: [/^\d{10,15}$/, "Please fill a valid phone number"],
-    },
-    universityEmailVerified: {
-        type: Boolean,
-        default: false,
-    },
+
     secondaryPersonalEmail: {
         type: String,
         match: [
@@ -39,16 +32,37 @@ const userSchema = new mongoose.Schema({
             "Please fill a valid email address",
         ],
     },
+
+    phoneNumber: {
+        type: String,
+        match: [/^\d{10,15}$/, "Please fill a valid phone number"],
+    },
+
+    universityEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    personalEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
     secondaryPersonalEmailVerified: {
         type: Boolean,
         default: false,
     },
+
     universityEmailExpirationDate: {
         type: Date,
     },
+
+    google_EmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+
     username: {
         type: String,
-        unique: true,
+        unique: true
     },
     password: {
         type: String,
@@ -63,6 +77,14 @@ const userSchema = new mongoose.Schema({
         default: "",
     },
     token: {
+        type: String,
+        default: ''
+    },
+    refresh_token: {
+        type: String,
+        default: ''
+    },
+    access_token: {
         type: String,
         default: ''
     },
