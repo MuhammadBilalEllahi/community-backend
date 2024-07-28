@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 
 
 const signupR = async (req, res) => {
+    console.log(req.body)
     try {
         const { universityEmail, universityEmailPassword } = req.body;
 
@@ -14,21 +15,26 @@ const signupR = async (req, res) => {
         const user = await User.findOne({ universityEmail })
 
 
+
         if (user) return res.status(400).json({ error: "User already Exists" })
         // fa21-bcs-058
+
 
         const saltRound = await bcryptjs.genSalt(10)
         const hashedPassowrd = await bcryptjs.hash(universityEmailPassword, saltRound)
 
+        const username = universityEmail.split("@")[0]
+        console.log("here")
         const userCreate = new User({
             universityEmail: universityEmail,
-            password: hashedPassowrd
+            password: hashedPassowrd,
+            username: username
         })
 
         if (userCreate) {
             const token = await generateToken(userCreate._id)
             await userCreate.save()
-
+            console.log("her2e")
             const datas = {
                 name: "",
                 email: universityEmail,
@@ -61,7 +67,7 @@ const signupR = async (req, res) => {
         }
 
     } catch (error) {
-        // console.log("Error in- signup-registered-student-controller: ", error.message)
+        console.log("Error in- signup-registered-student-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" })
         // throw new Error("Error in- signup-controller: ", error)
     }

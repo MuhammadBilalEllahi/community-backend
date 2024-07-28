@@ -164,6 +164,25 @@ const getUserDataFetch = async (req, res) => {
 };
 
 
+
+async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const r = await oAuth2Client.getToken(code);
+            await oAuth2Client.setCredentials(r.tokens);
+            return oAuth2Client.credentials;
+        } catch (err) {
+            console.log(`Attempt ${i + 1} failed: ${err.message}`);
+            if (i < retries - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                throw err;
+            }
+        }
+    }
+}
+
+
 /* GET home page. */
 const getOAuthClient = async (req, res, next) => {
 
@@ -177,10 +196,10 @@ const getOAuthClient = async (req, res, next) => {
             process.env.CLIENT_SECRET,
             redirectURL
         );
-        const r = await oAuth2Client.getToken(code);
-        await oAuth2Client.setCredentials(r.tokens);
+        const user = await retryOAuth2ClientGetToken(oAuth2Client, code);
+        // await oAuth2Client.setCredentials(r.tokens);
         // console.info('Tokens acquired.');
-        const user = oAuth2Client.credentials;
+        // const user = oAuth2Client.credentials;
         console.log('credentials', user);
         await getUserData(oAuth2Client.credentials.access_token, user, req, res);
 
@@ -190,6 +209,7 @@ const getOAuthClient = async (req, res, next) => {
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
     } catch (err) {
+        res.status(500).json({ "error": err.message })
         console.log('Error logging in with OAuth2 user', err);
     }
     // console.log("Logged in redirecting...")
