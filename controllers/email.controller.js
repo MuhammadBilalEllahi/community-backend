@@ -4,7 +4,7 @@ const resend = new Resend(process.env.resend);
 
 const resendEmail = async (datas, req, res) => {
     try {
-        console.log(datas);
+        // console.log(datas);
         const { data, error } = await resend.emails.send({
             from: "no-reply@bilalellahi.com",
             to: ["bilalillahi25@gmail.com", datas.email],

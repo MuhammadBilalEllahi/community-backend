@@ -173,43 +173,43 @@ const logout = async (req, res) => {
         // res.cookie("jwt", "", { maxAge: 0 })
         // console.log(req.user)
         const user = jwt.decode(token, process.env.JWT_SECRET)
-        console.log("The user", user)
-        console.log("The token", token)
+        // console.log("The user", user)
+        // console.log("The token", token)
         if (user) {
             fetch(`https://oauth2.googleapis.com/userinfo?token=${token}`)
                 .then(async (userIn) => {
                     const email = user.email;
-                    console.log("here", email)
+                    // console.log("here", email)
 
                     const allowedDomains = ["cuilahore", "cuiislamabad", "cuiabbottabad"];
                     const domainPattern = allowedDomains.join('|');
                     const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
 
-                    console.log("\nhere: 0", email, universityEmailRegex.test(email))
+                    // console.log("\nhere: 0", email, universityEmailRegex.test(email))
                     const regEx_Bool = universityEmailRegex.test(email)
                     let isFoundUser;
                     if (regEx_Bool) {
                         isFoundUser = await User.findOne({ universityEmail: email })
-                        console.log("\nhere: 1 ", isFoundUser)
+                        // console.log("\nhere: 1 ", isFoundUser)
                     } else {
                         isFoundUser = await User.findOne({ personalEmail: email })
-                        console.log("\nhere: 2 ", isFoundUser)
+                        // console.log("\nhere: 2 ", isFoundUser)
                     }
                     const access_token = isFoundUser.access_token;
-                    console.log("User is", isFoundUser)
+                    // console.log("User is", isFoundUser)
                     fetch(`https://www.googleapis.com/oauth2/v1/revoke?access_token=${access_token}`)
                         .then(async (dataIn) => {
-                            console.log("Here to revoke")
+                            // console.log("Here to revoke")
                             if (regEx_Bool) {
                                 isFoundUser = await User.findOneAndUpdate({ universityEmail: email }, {
                                     token: '', refresh_token: '', access_token: '',
                                 })
-                                console.log("Here to revoke uni email", isFoundUser)
+                                // console.log("Here to revoke uni email", isFoundUser)
                             } else {
                                 isFoundUser = await User.findOneAndUpdate({ personalEmail: email }, {
                                     token: '', refresh_token: '', access_token: '',
                                 })
-                                console.log("Here to revoke personal email", isFoundUser)
+                                // console.log("Here to revoke personal email", isFoundUser)
                             }
 
                             return res.status(200).json({ "message": "logged out" })
@@ -223,7 +223,7 @@ const logout = async (req, res) => {
                     return res.status(404).json({ "error": e })
                 })
         }
-        console.log("The user id", user.email)
+        // console.log("The user id", user.email)
 
         // req.user = undefined;
         // res.status(200).json({ message: "Logged Out" })

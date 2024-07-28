@@ -10,15 +10,14 @@ const cookieParser = require("cookie-parser")
 const mongoDB = require("./db/connect.mongodb.js")
 
 
-
-
-
-app.use(cookieParser())
-app.use(morgan("dev"))
 app.use(cors({
     origin: "http://localhost:3000",
     credentials: true
 }))
+
+
+app.use(cookieParser())
+app.use(morgan("dev"))
 
 
 dotenv.config()
@@ -32,12 +31,15 @@ const authRouter = require("./routes/authRoute")
 const oAuthRouter = require('./routes/oauth');
 const requestRoute = require('./routes/request');
 const emailRoute = require('./routes/email.route.js');
+const teacherRoute = require('./routes/teacher.route.js');
 
 
 app.use("/api/auth", authRouter)
 app.use('/oauth', oAuthRouter);
 app.use('/request', requestRoute);
 app.use('/email', emailRoute);
+
+app.use('/api/teachers', teacherRoute);
 // app.use("/request", authRouter)
 
 
@@ -47,7 +49,3 @@ app.listen(PORT, () => {
 })
 
 
-console.log(!(!false || !true))
-console.log(!(!true || !false))
-console.log(!(!false || !false))
-console.log(!(!true || !true))

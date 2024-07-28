@@ -8,10 +8,10 @@ const { resendEmail } = require('./email.controller');
 async function getUserData(access_token, user, req, res) {
 
     const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
-    console.log("Access Token", access_token)
+    // console.log("Access Token", access_token)
     //console.log('response',response);
     const data = await response.json();
-    console.log('data', data); console.log('data', data.email, data.email_verfied);
+    // console.log('data', data); console.log('data', data.email, data.email_verfied);
 
     const universityEmail_UserDB = await User.findOne({ universityEmail: data.email });
     const personalEmail_UserDB = await User.findOne({ personalEmail: data.email });
@@ -22,7 +22,7 @@ async function getUserData(access_token, user, req, res) {
         const emailDomain = data.email.split("@")[1]
 
 
-        console.log("split email ", test_pass, "and ", emailDomain)
+        // console.log("split email ", test_pass, "and ", emailDomain)
 
         const isUniversityMail = emailDomain === "cuilahore.edu.pk" || emailDomain === "cuiislamabad.edu.pk";
 
@@ -74,17 +74,17 @@ async function getUserData(access_token, user, req, res) {
     } else {
         if (universityEmail_UserDB) {
             const Id = universityEmail_UserDB.universityEmail
-            console.log("The id: ", Id)
+            // console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({ universityEmail: Id }, {
                 access_token: user.access_token,
                 token: user.id_token,
                 refresh_token: user.refresh_token,
             })
-            console.log("Uni Email Already Signed Up: ", response)
+            // console.log("Uni Email Already Signed Up: ", response)
         }
         if (personalEmail_UserDB) {
             const Id = personalEmail_UserDB.personalEmail
-            console.log("The id: ", Id)
+            // console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({
                 universityEmail: Id
             }, {
@@ -117,7 +117,7 @@ function getExpirationDate(isUniversityMail, test_pass) {
         const year = session.split(fall_or_spring)[1]
 
         const startDate = new Date(`0${fall_or_spring === "sp" ? "03" : "08"}/02/20${year}`) // month,date,year
-        console.log(startDate)
+        //console.log(startDate)
         const expirayDate = new Date(startDate.setFullYear(startDate.getFullYear() + 4))
 
         return expirayDate
@@ -126,6 +126,42 @@ function getExpirationDate(isUniversityMail, test_pass) {
 
 }
 
+
+const getUserDataFetch = async (req, res) => {
+
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    const { id_token } = req.query;
+    // console.log("token is", id_token, "\n");
+
+    try {
+        const oAuth2Client = new OAuth2Client(
+            process.env.CLIENT_ID,
+            process.env.CLIENT_SECRET
+        );
+
+        const ticket = await oAuth2Client.verifyIdToken({
+            idToken: id_token,
+            audience: process.env.CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        //console.log("User info:", payload);
+
+        res.status(200).json({
+            data: {
+                email: payload.email,
+                email_verified: payload.email_verified,
+                picture: payload.picture,
+                name: payload.name
+
+            }
+        });
+    } catch (error) {
+        console.error("Error verifying token:", error);
+        res.status(404).json({ error: "Token verification failed" });
+    }
+};
 
 
 /* GET home page. */
@@ -161,4 +197,4 @@ const getOAuthClient = async (req, res, next) => {
 
 }
 
-module.exports = { getOAuthClient };
+module.exports = { getOAuthClient, getUserDataFetch };
