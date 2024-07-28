@@ -125,8 +125,59 @@ function getExpirationDate(isUniversityMail, test_pass) {
     }
 
 }
+async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const r = await oAuth2Client.getToken(code);
+            await oAuth2Client.setCredentials(r.tokens);
+            return oAuth2Client.credentials;
+        } catch (err) {
+            console.log(`Attempt ${i + 1} failed: ${err.message}`);
+            if (i < retries - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                throw err;
+            }
+        }
+    }
+}
+/* GET home page. */
+const getOAuthClient = async (req, res, next) => {
+
+    const code = req.query.code;
+
+    // console.log("The code is : ", code);
+    try {
+        const redirectURL = "http://localhost:3000/oauth"
+        const oAuth2Client = new OAuth2Client(
+            process.env.CLIENT_ID,
+            process.env.CLIENT_SECRET,
+            redirectURL
+        );
+        const user = await retryOAuth2ClientGetToken(oAuth2Client, code);
+        // await oAuth2Client.setCredentials(r.tokens);
+        // console.info('Tokens acquired.');
+        // const user = oAuth2Client.credentials;
+        // console.log('credentials', user);
+        await getUserData(oAuth2Client.credentials.access_token, user, req, res);
 
 
+        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}`);
+
+        // res.status(200).json(`token: ${user.access_token}`) dont do this
+
+    } catch (err) {
+        res.status(500).json({ "error": err.message })
+        console.log('Error logging in with OAuth2 user', err);
+    }
+    // console.log("Logged in redirecting...")
+    // res.redirect(303, 'http://localhost:3000/login');
+
+}
+
+
+
+// Get User Info
 const getUserDataFetch = async (req, res) => {
 
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -164,57 +215,5 @@ const getUserDataFetch = async (req, res) => {
 };
 
 
-
-async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 3, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const r = await oAuth2Client.getToken(code);
-            await oAuth2Client.setCredentials(r.tokens);
-            return oAuth2Client.credentials;
-        } catch (err) {
-            console.log(`Attempt ${i + 1} failed: ${err.message}`);
-            if (i < retries - 1) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                throw err;
-            }
-        }
-    }
-}
-
-
-/* GET home page. */
-const getOAuthClient = async (req, res, next) => {
-
-    const code = req.query.code;
-
-    console.log("The code is : ", code);
-    try {
-        const redirectURL = "http://localhost:3000/oauth"
-        const oAuth2Client = new OAuth2Client(
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET,
-            redirectURL
-        );
-        const user = await retryOAuth2ClientGetToken(oAuth2Client, code);
-        // await oAuth2Client.setCredentials(r.tokens);
-        // console.info('Tokens acquired.');
-        // const user = oAuth2Client.credentials;
-        console.log('credentials', user);
-        await getUserData(oAuth2Client.credentials.access_token, user, req, res);
-
-
-        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}`);
-
-        // res.status(200).json(`token: ${user.access_token}`) dont do this
-
-    } catch (err) {
-        res.status(500).json({ "error": err.message })
-        console.log('Error logging in with OAuth2 user', err);
-    }
-    // console.log("Logged in redirecting...")
-    // res.redirect(303, 'http://localhost:3000/login');
-
-}
 
 module.exports = { getOAuthClient, getUserDataFetch };

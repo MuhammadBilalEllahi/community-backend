@@ -33,7 +33,11 @@ const teacherSchema = new Schema({
     onLeave: {
         type: Boolean,
         required: true
-    }
+    },
+    rating: {
+        type: Number,
+        default: 0
+    },
 });
 
 
