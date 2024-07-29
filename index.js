@@ -49,3 +49,17 @@ app.listen(PORT, () => {
 })
 
 
+
+
+
+// const universityEmail_UserDB = 's'
+// const personalEmail_UserDB = null
+
+// // 00 1
+// // 01 0
+// // 10 0
+// // 11 0
+
+// console.log()
+
+

@@ -9,27 +9,23 @@ async function getUserData(access_token, user, req, res) {
 
     const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
     // console.log("Access Token", access_token)
-    //console.log('response',response);
+    // console.log('response', response);
     const data = await response.json();
-    // console.log('data', data); console.log('data', data.email, data.email_verfied);
+    console.log('data', data); console.log('data', data.email, data.email_verified);
 
     const universityEmail_UserDB = await User.findOne({ universityEmail: data.email });
     const personalEmail_UserDB = await User.findOne({ personalEmail: data.email });
 
+    console.log("EMAil", universityEmail_UserDB, personalEmail_UserDB)
 
-    if (!(!universityEmail_UserDB || !personalEmail_UserDB)) {
+
+    if (!(Boolean(universityEmail_UserDB || personalEmail_UserDB))) {
         const test_pass = data.email.split("@")[0]
         const emailDomain = data.email.split("@")[1]
-
-
-        // console.log("split email ", test_pass, "and ", emailDomain)
+        console.log("split email ", test_pass, "and ", emailDomain)
 
         const isUniversityMail = emailDomain === "cuilahore.edu.pk" || emailDomain === "cuiislamabad.edu.pk";
-
         const universityEmailExpirationDate = getExpirationDate(isUniversityMail, test_pass)
-
-
-
 
         const saltRound = await bcryptjs.genSalt(10)
         const hashedPassowrd = await bcryptjs.hash(test_pass, saltRound)
@@ -70,21 +66,25 @@ async function getUserData(access_token, user, req, res) {
             }
 
             await resendEmail(datas, req, res)
+
+            return userCreate._id
         }
     } else {
         if (universityEmail_UserDB) {
             const Id = universityEmail_UserDB.universityEmail
-            // console.log("The id: ", Id)
+            console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({ universityEmail: Id }, {
                 access_token: user.access_token,
                 token: user.id_token,
                 refresh_token: user.refresh_token,
             })
-            // console.log("Uni Email Already Signed Up: ", response)
+            console.log("Uni Email Already Signed Up: ", response)
+            return response._id
+
         }
         if (personalEmail_UserDB) {
             const Id = personalEmail_UserDB.personalEmail
-            // console.log("The id: ", Id)
+            console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({
                 universityEmail: Id
             }, {
@@ -93,6 +93,7 @@ async function getUserData(access_token, user, req, res) {
                 refresh_token: user.refresh_token,
             })
             console.log("Personal Email Already Signed Up: ", response)
+            return response._id
         }
 
     }
@@ -159,10 +160,12 @@ const getOAuthClient = async (req, res, next) => {
         // console.info('Tokens acquired.');
         // const user = oAuth2Client.credentials;
         // console.log('credentials', user);
-        await getUserData(oAuth2Client.credentials.access_token, user, req, res);
+        const userId = await getUserData(oAuth2Client.credentials.access_token, user, req, res);
+        console.log(userId)
+        let user_Id = userId.toString().split("'")[0];
+        console.log("USer id ", user_Id)
 
-
-        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}`);
+        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}&?user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 

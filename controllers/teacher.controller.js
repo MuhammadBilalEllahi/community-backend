@@ -68,21 +68,20 @@ const rateATeacher = async (req, res) => {
             return res.status(404).send('Teacher not found');
         }
 
-        const student = await User.findOne({ personalEmail: userId })
-        console.log(student._id)
-
-        let studentId = student._id.toString().split("'")[0];
-        console.log(studentId, "k")
+        const student = await User.findById({ _id: userId })
+        // console.log(student)
 
 
-        const existingRatingIndex = teacher.ratings.findIndex(r => r.userId.toString() === studentId.toString());
+
+
+        const existingRatingIndex = teacher.ratings.findIndex(r => r.userId.toString() === student._id.toString());
 
         console.log(existingRatingIndex, "isit")
         if (existingRatingIndex !== -1) {
             teacher.ratings[existingRatingIndex].rating = rating;
             teacher.ratings[existingRatingIndex].comment = comment;
         } else {
-            teacher.ratings.push({ userId: studentId, rating, comment });
+            teacher.ratings.push({ userId: student._id, rating, comment });
         }
 
         const totalRatings = teacher.ratings.length;

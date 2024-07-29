@@ -20,7 +20,7 @@ const teacherSchema = new Schema({
     },
     supervisorStatus: {
         type: String,
-        required: true
+        // required: true
     },
     imageUrl: {
         type: String,
