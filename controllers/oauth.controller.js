@@ -77,7 +77,7 @@ async function getUserData(access_token, user, req, res) {
                 access_token: user.access_token,
                 token: user.id_token,
                 refresh_token: user.refresh_token,
-            })
+            }, { new: true, select: "_id" })
             console.log("Uni Email Already Signed Up: ", response)
             return response._id
 
@@ -86,12 +86,13 @@ async function getUserData(access_token, user, req, res) {
             const Id = personalEmail_UserDB.personalEmail
             console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({
-                universityEmail: Id
+                personalEmail: Id
             }, {
                 access_token: user.access_token,
                 token: user.id_token,
                 refresh_token: user.refresh_token,
-            })
+            },
+                { new: true, select: "_id" })
             console.log("Personal Email Already Signed Up: ", response)
             return response._id
         }
@@ -165,7 +166,7 @@ const getOAuthClient = async (req, res, next) => {
         let user_Id = userId.toString().split("'")[0];
         console.log("USer id ", user_Id)
 
-        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}&?user=${user_Id}`);
+        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}&user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 

@@ -40,6 +40,7 @@ const teacherSchema = new Schema({
     },
     ratings: [{
         userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        hideUser: { type: Boolean, default: false },
         rating: { type: Number, required: true },
         comment: { type: String }
     }]
