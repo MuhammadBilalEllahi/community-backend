@@ -20,6 +20,14 @@ async function getUserData(access_token, user, req, res) {
 
 
     if (!(Boolean(universityEmail_UserDB || personalEmail_UserDB))) {
+
+        const allowedDomains = ["cuilahore", "cuiislamabad", "cuiabbottabad"];
+        const domainPattern = allowedDomains.join('|');
+        const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
+
+        if (!(universityEmailRegex.test(data.email))) {
+            return res.status(422).json({ message: "Only Organizational Accounts are Allowed to Signup \nor Signup on /register/student-type" })
+        }
         const test_pass = data.email.split("@")[0]
         const emailDomain = data.email.split("@")[1]
         console.log("split email ", test_pass, "and ", emailDomain)
@@ -47,9 +55,9 @@ async function getUserData(access_token, user, req, res) {
 
         })
 
-
+        await userCreate.save()
         if (userCreate) {
-            await userCreate.save()
+
 
             const datas = {
                 name: data.name,
@@ -162,7 +170,8 @@ const getOAuthClient = async (req, res, next) => {
         // const user = oAuth2Client.credentials;
         // console.log('credentials', user);
         const userId = await getUserData(oAuth2Client.credentials.access_token, user, req, res);
-        console.log(userId)
+        if (userId.statusCode === 422) return;
+        console.log("User ID", userId.statusCode)
         let user_Id = userId.toString().split("'")[0];
         console.log("USer id ", user_Id)
 
@@ -171,8 +180,12 @@ const getOAuthClient = async (req, res, next) => {
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
     } catch (err) {
-        res.status(500).json({ "error": err.message })
-        console.log('Error logging in with OAuth2 user', err);
+        console.log('Error logging in with OAuth2 user', err.message, "and ", err.code, "and ", err.statusCode);
+        if (err.code !== 'ERR_HTTP_HEADERS_SENT') {
+            res.status(500).json({ "error": err.message })
+        }
+
+
     }
     // console.log("Logged in redirecting...")
     // res.redirect(303, 'http://localhost:3000/login');

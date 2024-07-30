@@ -1,3 +1,5 @@
+// const cluster = require('cluster');
+// const os = require('os');
 const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -43,23 +45,30 @@ app.use('/api/teachers', teacherRoute);
 // app.use("/request", authRouter)
 
 
-app.listen(PORT, () => {
-    mongoDB()
-    console.log(`Server Running on ${PORT}`)
-})
+const startServer = () => {
+    app.listen(PORT, () => {
+        mongoDB()
+        console.log(`Server Running on ${PORT}`)
+    })
+}
+
+startServer()
 
 
 
 
+// if (cluster.isMaster) {
+//     const numCPUs = os.cpus().length;
 
-// const universityEmail_UserDB = 's'
-// const personalEmail_UserDB = null
+//     console.log(`Master ${process.pid} is running`);
 
-// // 00 1
-// // 01 0
-// // 10 0
-// // 11 0
+//     for (let i = 0; i < numCPUs; i++) {
+//         cluster.fork();
+//     }
 
-// console.log()
-
-
+//     cluster.on('exit', (worker, code, signal) => {
+//         console.log(`Worker ${worker.process.pid} died`);
+//     });
+// } else {
+//     startServer();
+// }
