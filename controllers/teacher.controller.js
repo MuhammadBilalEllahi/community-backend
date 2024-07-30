@@ -141,9 +141,30 @@ const getTeacherReviews = async (req, res) => {
     }
 };
 
+
+
+const teacherSpeficicInfo = async (req, res) => {
+    const { id } = req.query;
+    try {
+        const teacher = await Teacher.findById(id);
+        if (!teacher) {
+            return res.status(404).json({ message: "Teacher not found" });
+        }
+        res.status(200).json(teacher);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+}
+
+
+
+
+
+
 module.exports = {
     allTeachers,
     rateATeacher,
     getTeacherReviews,
     get_a_TeacherReviews,
+    teacherSpeficicInfo
 };
