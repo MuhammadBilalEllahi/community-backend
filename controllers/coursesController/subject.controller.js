@@ -1,6 +1,7 @@
 const { Course } = require("../../models/courseModels/course.model")
 const { Department } = require("../../models/courseModels/department.model")
 const { Subject } = require("../../models/courseModels/subject.model")
+const { Year } = require("../../models/courseModels/year.model")
 
 const getSubjects = async (req, res) => {
 
@@ -73,10 +74,33 @@ const addSubjects = async (req, res) => {
     }
 }
 
+const addYearlyRecordFallAndSpring = async (req, res) => {
+    const { subjectId, year, fall, spring } = req.body;
+    try {
+        const subject = await Subject.findById({ _id: subjectId })
+        if (!subject) return res.stats(404).json({ message: "Subject Not Found" })
+        const yearAlreadyThere = await Year.find({ year: year })
+        // if (yearAlreadyThere) return res.status(400).json({ message: "Year Can not be modified here" })
+
+        const yearCreate = await Year.create({
+            year: year,
+            fall: fall,
+            spring: spring
+        })
+
+        res.status(200).json({ message: `Year Created with Document Fall: ${fall}, and Spring: ${spring}` })
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+}
+
+
+
 module.exports = {
     getSubjects,
     addSubject,
-    addSubjects
+    addSubjects,
+    addYearlyRecordFallAndSpring
 }
 
 
