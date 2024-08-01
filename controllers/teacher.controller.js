@@ -105,19 +105,30 @@ const get_a_TeacherReviews = async (req, res) => {
             return res.status(404).json({ message: "Teacher not found" });
         }
         console.log(teacher)
-        const populatedRatings = teacher.ratings.map((review) => ({
-            rating: review.rating,
-            comment: review.comment,
-            userId: {
-                "_id": review.userId._id,
-                "name": review.userId.name,
-                "personalEmail": review.userId.personalEmail,
-                "universityEmail": review.userId.universityEmail,
-                "profilePic": review.userId.profilePic,
-                "universityEmailVerified": review.userId.universityEmailVerified,
-                "personalEmailVerified": review.userId.personalEmailVerified
-            },
-        }));
+        const populatedRatings = teacher.ratings.map((review) => {
+            if (review.userId) {
+                return {
+                    rating: review.rating,
+                    comment: review.comment,
+                    userId: {
+                        "_id": review.userId._id,
+                        "name": review.userId.name,
+                        "personalEmail": review.userId.personalEmail,
+                        "universityEmail": review.userId.universityEmail,
+                        "profilePic": review.userId.profilePic,
+                        "universityEmailVerified": review.userId.universityEmailVerified,
+                        "personalEmailVerified": review.userId.personalEmailVerified
+                    }
+                }
+            } else {
+                return {
+                    rating: review.rating,
+                    comment: review.comment,
+                    userId: null
+                };
+            }
+
+        });
         console.log(teacher, "and", populatedRatings);
 
         res.status(200).json(populatedRatings);

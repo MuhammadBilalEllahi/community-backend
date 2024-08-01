@@ -34,6 +34,9 @@ const oAuthRouter = require('./routes/oauth');
 const requestRoute = require('./routes/request');
 const emailRoute = require('./routes/email.route.js');
 const teacherRoute = require('./routes/teacher.route.js');
+const departmentRouter = require('./routes/courseRoute/department.route.js');
+const courseRouter = require('./routes/courseRoute/course.route.js');
+const subjectRouter = require('./routes/courseRoute/subject.route.js');
 
 
 app.use("/api/auth", authRouter)
@@ -42,7 +45,9 @@ app.use('/request', requestRoute);
 app.use('/email', emailRoute);
 
 app.use('/api/teachers', teacherRoute);
-// app.use("/request", authRouter)
+app.use("/department", departmentRouter)
+app.use("/course", courseRouter)
+app.use("/subject", subjectRouter)
 
 
 const startServer = () => {
