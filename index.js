@@ -37,6 +37,7 @@ const teacherRoute = require('./routes/teacher.route.js');
 const departmentRouter = require('./routes/courseRoute/department.route.js');
 const courseRouter = require('./routes/courseRoute/course.route.js');
 const subjectRouter = require('./routes/courseRoute/subject.route.js');
+const servePDFRouter = require('./routes/courseRoute/servePDF.route.js');
 
 
 app.use("/api/auth", authRouter)
@@ -48,6 +49,7 @@ app.use('/api/teachers', teacherRoute);
 app.use("/department", departmentRouter)
 app.use("/course", courseRouter)
 app.use("/subject", subjectRouter)
+app.use("/pastpapers", servePDFRouter)
 
 
 const startServer = () => {

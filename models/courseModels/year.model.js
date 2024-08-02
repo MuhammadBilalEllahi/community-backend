@@ -8,12 +8,24 @@ const fileSchema = new mongoose.Schema({
 const yearSchema = new mongoose.Schema({
     year: { type: Number, required: true },
     fall: {
-        lab: [fileSchema],
-        theory: [fileSchema]
+        final: {
+            lab: [fileSchema],
+            theory: [fileSchema]
+        },
+        mid: {
+            lab: [fileSchema],
+            theory: [fileSchema]
+        }
     },
     spring: {
-        lab: [fileSchema],
-        theory: [fileSchema]
+        final: {
+            lab: [fileSchema],
+            theory: [fileSchema]
+        },
+        mid: {
+            lab: [fileSchema],
+            theory: [fileSchema]
+        }
     },
     // subject: { type: mongoose.Schema.Types.ObjectId, ref: "Subject" },
 });

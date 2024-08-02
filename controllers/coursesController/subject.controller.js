@@ -17,7 +17,20 @@ const getSubjects = async (req, res) => {
     }
 
 }
+const getSubjectsByIdAndGetPDF = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const subjects = await Subject.findById(id).populate("years").select("years name")
+        if (!subjects) return res.status(300).json({ message: "No Subject Found" })
 
+
+        res.status(200).json({ subjects })
+
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+
+}
 
 const addSubject = async (req, res) => {
     const { courseCode, department } = req.body
@@ -88,6 +101,10 @@ const addYearlyRecordFallAndSpring = async (req, res) => {
             spring: spring
         })
 
+        subject.years.push(yearCreate._id)
+        await subject.save()
+        console.log(subject)
+
         res.status(200).json({ message: `Year Created with Document Fall: ${fall}, and Spring: ${spring}` })
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -100,7 +117,8 @@ module.exports = {
     getSubjects,
     addSubject,
     addSubjects,
-    addYearlyRecordFallAndSpring
+    addYearlyRecordFallAndSpring,
+    getSubjectsByIdAndGetPDF
 }
 
 
