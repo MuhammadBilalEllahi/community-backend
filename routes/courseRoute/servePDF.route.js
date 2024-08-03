@@ -5,7 +5,7 @@ const fs = require('fs')
 
 
 router.get('/:year/:subject/:type/:filename', (req, res) => {
-    console.log("Here",)
+    // console.log("Here",)
     const { year, subject, type, filename } = req.params;
     const filePath = path.join(__dirname, "..", "..", 'pastpapers', year, subject, type, filename);
 

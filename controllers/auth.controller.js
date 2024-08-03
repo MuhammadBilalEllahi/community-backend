@@ -23,7 +23,7 @@ const signupR = async (req, res) => {
         );
 
         const username = universityEmail.split("@")[0];
-        console.log("here");
+        // console.log("here");
         const userCreate = new User({
             universityEmail: universityEmail,
             password: hashedPassowrd,
