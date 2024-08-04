@@ -53,9 +53,205 @@ const addReplyToComment = async (req, res) => {
 // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 // }, { timestamps: true });
 
+const upVoteCommentOrReply = async (req, res) => {
+    const { commentId, userId } = req.body;
+    try {
+        const user = await User.findById(userId)
+        if (!user) return res.status(404).json({ error: "User does not exist" })
 
+        const comment = await Comment.findById(commentId)
+        if (!comment) return res.status(404).json({ error: "Comment does not exist" })
+
+        const hasDownvoted = comment.downvotes.includes(userId);
+        if (hasDownvoted) {
+            comment.downvotes.pull(userId);
+        }
+
+        const hasUpvoted = comment.upvotes.includes(userId);
+        if (hasUpvoted) {
+
+            comment.upvotes.pull(userId);
+        } else {
+
+            comment.upvotes.push(userId);
+        }
+
+        const updatedComment = await comment.save();
+        const upVoteCount = updatedComment.upvotes.length;
+        const downVoteCount = updatedComment.downvotes.length * -1;
+
+        return res.status(200).json({ downVoteCount: downVoteCount, upVoteCount: upVoteCount });
+
+        // const isUpvoteAlreadyRegiestered = comment.upvotes.find(userId)
+        // if (isUpvoteAlreadyRegiestered) {
+        //     const updateUpvote = comment.upvotes.pop(userId);
+        //     const updatedUpVote = await updateUpvote.save()
+        //     const upVoteCount = updatedUpVote.upvotes.length;
+        //     return res.status(200).json({ upVoteCount: upVoteCount })
+        // }
+        // const updateUpvote = comment.upvotes.push(userId);
+        // const updatedUpVote = await updateUpvote.save()
+        // const upVoteCount = updatedUpVote.upvotes.length;
+
+        // res.status(200).json({ upVoteCount: upVoteCount })
+
+
+    } catch (error) {
+        res.status(500, error.message)
+    }
+}
+const downVoteCommentOrReply = async (req, res) => {
+    try {
+        const { commentId, userId } = req.body
+        try {
+            const user = await User.findById(userId)
+            if (!user) return res.status(404).json({ error: "User does not exist" })
+
+            const comment = await Comment.findById(commentId)
+            if (!comment) return res.status(404).json({ error: "Comment does not exist" })
+
+            const hasUpvoted = comment.upvotes.includes(userId);
+            if (hasUpvoted) {
+
+                comment.upvotes.pull(userId);
+            }
+            const hasDownvoted = comment.downvotes.includes(userId);
+
+            if (hasDownvoted) {
+
+                comment.downvotes.pull(userId);
+            } else {
+
+                comment.downvotes.push(userId);
+            }
+
+            const updatedComment = await comment.save();
+            const downVoteCount = updatedComment.downvotes.length * -1;
+            const upVoteCount = updatedComment.upvotes.length;
+
+            return res.status(200).json({ downVoteCount: downVoteCount, upVoteCount: upVoteCount });
+
+
+        } catch (error) {
+            res.status(500, error.message)
+        }
+    } catch (error) {
+        res.status(500, error.message)
+    }
+}
 
 module.exports = {
     addCommentToDiscussion,
-    addReplyToComment
+    addReplyToComment,
+    upVoteCommentOrReply,
+    downVoteCommentOrReply
 }
+
+
+
+
+
+
+
+// const upVoteCommentOrReply = async (req, res) => {
+//     const { commentId, userId } = req.body;
+//     let downVoteBool = false;
+//     let upVoteBool = false;
+//     try {
+//         const user = await User.findById(userId)
+//         if (!user) return res.status(404).json({ error: "User does not exist" })
+
+//         const comment = await Comment.findById(commentId)
+//         if (!comment) return res.status(404).json({ error: "Comment does not exist" })
+
+//         const hasDownvoted = comment.downvotes.includes(userId);
+//         if (hasDownvoted) {
+//             comment.downvotes.pull(userId);
+//             upVoteBool = false;
+//         } else {
+//             downVoteBool = true;
+
+//         }
+
+//         const hasUpvoted = comment.upvotes.includes(userId);
+//         if (hasUpvoted) {
+
+//             comment.upvotes.pull(userId);
+//             upVoteBool = false
+//         } else {
+
+//             comment.upvotes.push(userId);
+//             upVoteBool = true
+//         }
+
+//         const updatedComment = await comment.save();
+//         const upVoteCount = updatedComment.upvotes.length;
+//         const downVoteCount = updatedComment.downvotes.length * -1;
+
+//         return res.status(200).json({ downVoteCount: downVoteCount, upVoteCount: upVoteCount, downVoteBool: downVoteBool, upVoteBool: upVoteBool });
+
+//         // const isUpvoteAlreadyRegiestered = comment.upvotes.find(userId)
+//         // if (isUpvoteAlreadyRegiestered) {
+//         //     const updateUpvote = comment.upvotes.pop(userId);
+//         //     const updatedUpVote = await updateUpvote.save()
+//         //     const upVoteCount = updatedUpVote.upvotes.length;
+//         //     return res.status(200).json({ upVoteCount: upVoteCount })
+//         // }
+//         // const updateUpvote = comment.upvotes.push(userId);
+//         // const updatedUpVote = await updateUpvote.save()
+//         // const upVoteCount = updatedUpVote.upvotes.length;
+
+//         // res.status(200).json({ upVoteCount: upVoteCount })
+
+
+//     } catch (error) {
+//         res.status(500, error.message)
+//     }
+// }
+// const downVoteCommentOrReply = async (req, res) => {
+//     try {
+//         const { commentId, userId } = req.body;
+//         let downVoteBool = false;
+//         let upVoteBool = false;
+//         try {
+
+//             const user = await User.findById(userId)
+//             if (!user) return res.status(404).json({ error: "User does not exist" })
+
+//             const comment = await Comment.findById(commentId)
+//             if (!comment) return res.status(404).json({ error: "Comment does not exist" })
+
+
+//             const hasUpvoted = comment.upvotes.includes(userId);
+//             if (hasUpvoted) {
+//                 comment.upvotes.pull(userId);
+//                 upVoteBool = false
+//             } else {
+//                 upVoteBool = true
+//             }
+//             const hasDownvoted = comment.downvotes.includes(userId);
+
+//             if (hasDownvoted) {
+
+//                 comment.downvotes.pull(userId);
+//                 downVoteBool = false;
+//             } else {
+
+//                 comment.downvotes.push(userId);
+//                 downVoteBool = true;
+//             }
+
+//             const updatedComment = await comment.save();
+//             const downVoteCount = updatedComment.downvotes.length * -1;
+//             const upVoteCount = updatedComment.upvotes.length;
+
+//             return res.status(200).json({ downVoteCount: downVoteCount, upVoteCount: upVoteCount, downVoteBool: downVoteBool, upVoteBool: upVoteBool });
+
+
+//         } catch (error) {
+//             res.status(500, error.message)
+//         }
+//     } catch (error) {
+//         res.status(500, error.message)
+//     }
+// }
