@@ -39,7 +39,7 @@ const populateReplies = (path, depth) => {
         },
         {
             path: 'user',
-            select: 'name profilePic universityEmail personalEmail universityEmailVerified updatedAt personalEmailVerified '
+            select: 'name profilePic universityEmail personalEmail universityEmailVerified updatedAt createdAt personalEmailVerified __v'
         }]
     };
 };
