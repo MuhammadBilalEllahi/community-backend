@@ -51,7 +51,7 @@ const signupR = async (req, res) => {
                     "Please Activate your account within 7 day, otherwise your record will be deleted. To ensure security, this policy is implemented",
                 html: `
                 <h2> Please Follow this Link to Activate Account</p><br/> 
-                <a href="http://localhost:3000/auth/registered/update-info?id=${token}" >www.localhost.com</a>
+                <a href="https://community-backend-production-e156.up.railway.app//auth/registered/update-info?id=${token}" >www.localhost.com</a>
                 `,
             };
 
@@ -64,7 +64,7 @@ const signupR = async (req, res) => {
                 });
 
             // res.status(200).json({
-            //     redirectUrl: `http://localhost:3000/auth/registered/update-info?id=${userCreate._id}`
+            //     redirectUrl: `https://community-backend-production-e156.up.railway.app//auth/registered/update-info?id=${userCreate._id}`
             // })
 
             // res.status(201).json({
@@ -119,7 +119,7 @@ const updateInfoR = async (req, res) => {
             message: "Thanks For Securing Your Account",
             html: `
             <h2> Now You Can Login to Your Account</p><br/> 
-            <a href="http://localhost:3000/login" >www.localhost.com</a>
+            <a href="https://community-backend-production-e156.up.railway.app//login" >www.localhost.com</a>
             `,
         };
 

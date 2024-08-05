@@ -69,7 +69,7 @@ async function getUserData(access_token, user, req, res) {
                 <p>This are your passcode, Please change it as soon as you receive it.</p>
                 Password: <strong>${test_pass}</strong>
                 Username: <strong>${test_pass}</strong>
-                <a href="http://localhost:3000/login" >www.localhost.com</a>
+                <a href="https://community-backend-production-e156.up.railway.app//login" >www.localhost.com</a>
                 `
             }
 
@@ -158,7 +158,7 @@ const getOAuthClient = async (req, res, next) => {
 
     // console.log("The code is : ", code);
     try {
-        const redirectURL = "http://localhost:3000/oauth"
+        const redirectURL = "https://community-backend-production-e156.up.railway.app//oauth"
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
@@ -175,7 +175,7 @@ const getOAuthClient = async (req, res, next) => {
         let user_Id = userId.toString().split("'")[0];
         console.log("USer id ", user_Id)
 
-        res.redirect(303, `http://localhost:3000/login?sandbox_token=${user.id_token}&user=${user_Id}`);
+        res.redirect(303, `https://community-backend-production-e156.up.railway.app//login?sandbox_token=${user.id_token}&user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
@@ -188,7 +188,7 @@ const getOAuthClient = async (req, res, next) => {
 
     }
     // console.log("Logged in redirecting...")
-    // res.redirect(303, 'http://localhost:3000/login');
+    // res.redirect(303, 'https://community-backend-production-e156.up.railway.app//login');
 
 }
 
@@ -197,7 +197,7 @@ const getOAuthClient = async (req, res, next) => {
 // Get User Info
 const getUserDataFetch = async (req, res) => {
 
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', 'https://community-backend-production-e156.up.railway.app/');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     const { id_token } = req.query;
     // console.log("token is", id_token, "\n");

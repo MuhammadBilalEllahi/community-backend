@@ -6,7 +6,7 @@
 //     const server = http.createServer(app);
 //     const io = socketIo(server, {
 //         cors: {
-//             origin: "http://localhost:3000",
+//             origin: "https://community-backend-production-e156.up.railway.app/",
 //             methods: ["GET", "POST"]
 //         }
 //     });

@@ -16,7 +16,7 @@ const mongoDB = require("./db/connect.mongodb.js")
 
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
     credentials: true
 }))
 
@@ -73,7 +73,7 @@ const startServer = () => {
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
         methods: ["GET", "POST"]
     }
 });
