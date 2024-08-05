@@ -69,7 +69,7 @@ async function getUserData(access_token, user, req, res) {
                 <p>This are your passcode, Please change it as soon as you receive it.</p>
                 Password: <strong>${test_pass}</strong>
                 Username: <strong>${test_pass}</strong>
-                <a href="https://community-backend-production-e156.up.railway.app//login" >www.localhost.com</a>
+                <a href="https://community-backend-production-e156.up.railway.app/login" >Verify Comsian Account</a>
                 `
             }
 
@@ -175,7 +175,7 @@ const getOAuthClient = async (req, res, next) => {
         let user_Id = userId.toString().split("'")[0];
         // console.log("USer id ", user_Id)
 
-        res.redirect(303, `https://community-backend-production-e156.up.railway.app//login?sandbox_token=${user.id_token}&user=${user_Id}`);
+        res.redirect(303, `https://comsain.vercel.app/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
@@ -188,7 +188,7 @@ const getOAuthClient = async (req, res, next) => {
 
     }
     // console.log("Logged in redirecting...")
-    // res.redirect(303, 'https://community-backend-production-e156.up.railway.app//login');
+    // res.redirect(303, 'https://community-backend-production-e156.up.railway.app/login');
 
 }
 

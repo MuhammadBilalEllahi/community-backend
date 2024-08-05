@@ -49,7 +49,7 @@ const commentRouter = require('./routes/discussion/comment.route.js');
 
 app.use("/api/auth", authRouter)
 app.use('/api/oauth', oAuthRouter);
-app.use('/request', requestRoute);
+app.use('/api/request', requestRoute);
 app.use('/email', emailRoute);
 
 app.use('/api/teachers', teacherRoute);
