@@ -1,4 +1,4 @@
-const client = require("../../db/redisClient");
+// const client = require("../../db/redisClient");
 const { Course } = require("../../models/courseModels/course.model");
 const { Department } = require("../../models/courseModels/department.model");
 const { Subject } = require("../../models/courseModels/subject.model");
@@ -20,23 +20,23 @@ const getDepartments = async (req, res) => {
 
 
 const getDepartmentsWithSubjects = async (req, res) => {
-    const cacheKey = 'departments_with_subjects';
+    // const cacheKey = 'departments_with_subjects';
 
     try {
-        const cachedDepartment = await client.get(cacheKey)
-        if (cachedDepartment) {
+        // const cachedDepartment = await client.get(cacheKey)
+        // if (cachedDepartment) {
 
-            console.log('Data retrieved from cache');
-            return res.status(200).json(JSON.parse(cachedDepartment))
-        }
+        //     console.log('Data retrieved from cache');
+        //     return res.status(200).json(JSON.parse(cachedDepartment))
+        // }
         const departments = await Department.find().select("name subjects").populate({ path: 'subjects name', select: "name courseCode department" })
         if (!departments) return res.status(300).json({ message: "Error fetching Department" })
 
         // const subjects = await
 
-        console.log(departments)
+        // console.log(departments)
 
-        await client.set(cacheKey, JSON.stringify({ departments }), 'EX', 2 * 3600)
+        // await client.set(cacheKey, JSON.stringify({ departments }), 'EX', 2 * 3600)
         res.status(200).json({ departments })
 
     } catch (error) {
@@ -66,7 +66,7 @@ const addDepartments = async (req, res) => {
     try {
         for (let names of data) {
             const { name } = names
-            console.log("name", name)
+            // console.log("name", name)
 
             const department = await Department.findOne({ name: name })
             if (department) return res.status(300).json({ message: "Department already exists" })

@@ -25,7 +25,7 @@ const loginWithGoogle = async (req, res, next) => {
         hd: "cuilahore.edu.pk"
     });
 
-    console.log("Auth url: ", authorizeUrl)
+    // console.log("Auth url: ", authorizeUrl)
 
     res.json({ url: authorizeUrl })
 }

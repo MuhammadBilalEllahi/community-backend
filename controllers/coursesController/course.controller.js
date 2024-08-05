@@ -24,7 +24,7 @@ const addCourses = async (req, res) => {
     try {
         let i = 1
         for (let course of courses) {
-            console.log("Processing Course ", i++, course)
+            // console.log("Processing Course ", i++, course)
             const { courseCode, courseName, creditHours, preRequisites } = course
 
 
@@ -35,7 +35,7 @@ const addCourses = async (req, res) => {
                 preRequisites: preRequisites || '-'
             });
             await newCourse.save();
-            console.log("Added Course ", i++, course)
+            // console.log("Added Course ", i++, course)
 
         }
 

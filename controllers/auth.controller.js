@@ -6,7 +6,7 @@ const { resendEmail } = require("./email.controller.js");
 const jwt = require("jsonwebtoken");
 
 const signupR = async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const { universityEmail, universityEmailPassword } = req.body;
 
@@ -42,7 +42,7 @@ const signupR = async (req, res) => {
                 res
             );
             await userCreate.save();
-            console.log("her2e");
+            // console.log("her2e");
             const datas = {
                 name: "",
                 email: universityEmail,
@@ -93,7 +93,7 @@ const updateInfoR = async (req, res) => {
     // console.log("\nID: ", id, "\nand", username, personalEmail, phoneNumber, urls, "\n")
     try {
         const decodedJwt = jwt.decode(id, process.env.JWT_SECRET);
-        console.log("\nDecoded:", decodedJwt, "\n")
+        // console.log("\nDecoded:", decodedJwt, "\n")
 
         const _id = decodedJwt._d;
         const findUser = await User.findOne({ _id: _id });
@@ -174,12 +174,12 @@ const login = async (req, res) => {
         if (!user.google_EmailVerified) {
             if (is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    console.log("universityEmailVerified Not")
+                    // console.log("universityEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             } else if (!is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    console.log("personalEmailVerified Not")
+                    // console.log("personalEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             }

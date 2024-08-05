@@ -11,12 +11,12 @@ async function getUserData(access_token, user, req, res) {
     // console.log("Access Token", access_token)
     // console.log('response', response);
     const data = await response.json();
-    console.log('data', data); console.log('data', data.email, data.email_verified);
+    // console.log('data', data); console.log('data', data.email, data.email_verified);
 
     const universityEmail_UserDB = await User.findOne({ universityEmail: data.email });
     const personalEmail_UserDB = await User.findOne({ personalEmail: data.email });
 
-    console.log("EMAil", universityEmail_UserDB, personalEmail_UserDB)
+    // console.log("EMAil", universityEmail_UserDB, personalEmail_UserDB)
 
 
     if (!(Boolean(universityEmail_UserDB || personalEmail_UserDB))) {
@@ -30,7 +30,7 @@ async function getUserData(access_token, user, req, res) {
         }
         const test_pass = data.email.split("@")[0]
         const emailDomain = data.email.split("@")[1]
-        console.log("split email ", test_pass, "and ", emailDomain)
+        // console.log("split email ", test_pass, "and ", emailDomain)
 
         const isUniversityMail = emailDomain === "cuilahore.edu.pk" || emailDomain === "cuiislamabad.edu.pk";
         const universityEmailExpirationDate = getExpirationDate(isUniversityMail, test_pass)
@@ -80,19 +80,19 @@ async function getUserData(access_token, user, req, res) {
     } else {
         if (universityEmail_UserDB) {
             const Id = universityEmail_UserDB.universityEmail
-            console.log("The id: ", Id)
+            // console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({ universityEmail: Id }, {
                 access_token: user.access_token,
                 token: user.id_token,
                 refresh_token: user.refresh_token,
             }, { new: true, select: "_id" })
-            console.log("Uni Email Already Signed Up: ", response)
+            // console.log("Uni Email Already Signed Up: ", response)
             return response._id
 
         }
         if (personalEmail_UserDB) {
             const Id = personalEmail_UserDB.personalEmail
-            console.log("The id: ", Id)
+            // console.log("The id: ", Id)
             const response = await User.findOneAndUpdate({
                 personalEmail: Id
             }, {
@@ -101,7 +101,7 @@ async function getUserData(access_token, user, req, res) {
                 refresh_token: user.refresh_token,
             },
                 { new: true, select: "_id" })
-            console.log("Personal Email Already Signed Up: ", response)
+            // console.log("Personal Email Already Signed Up: ", response)
             return response._id
         }
 
@@ -171,9 +171,9 @@ const getOAuthClient = async (req, res, next) => {
         // console.log('credentials', user);
         const userId = await getUserData(oAuth2Client.credentials.access_token, user, req, res);
         if (userId.statusCode === 422) return;
-        console.log("User ID", userId.statusCode)
+        // console.log("User ID", userId.statusCode)
         let user_Id = userId.toString().split("'")[0];
-        console.log("USer id ", user_Id)
+        // console.log("USer id ", user_Id)
 
         res.redirect(303, `https://community-backend-production-e156.up.railway.app//login?sandbox_token=${user.id_token}&user=${user_Id}`);
 

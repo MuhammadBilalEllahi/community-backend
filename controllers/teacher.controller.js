@@ -51,7 +51,7 @@ const allTeachers = async (req, res) => {
 const rateATeacher = async (req, res) => {
     const { teacherId, userId, rating, comment } = req.body;
 
-    console.log(teacherId, "this", userId, "this", rating, "this", comment);
+    // console.log(teacherId, "this", userId, "this", rating, "this", comment);
 
     if (!teacherId || !userId || rating === undefined) {
         return res.status(400).send("Missing required fields");
@@ -71,7 +71,7 @@ const rateATeacher = async (req, res) => {
             (r) => r.userId.toString() === student._id.toString()
         );
 
-        console.log(existingRatingIndex, "isit");
+        // console.log(existingRatingIndex, "isit");
         if (existingRatingIndex !== -1) {
             teacher.ratings[existingRatingIndex].rating = rating;
             teacher.ratings[existingRatingIndex].comment = comment;
@@ -104,7 +104,7 @@ const get_a_TeacherReviews = async (req, res) => {
         if (!teacher) {
             return res.status(404).json({ message: "Teacher not found" });
         }
-        console.log(teacher)
+        // console.log(teacher)
         const populatedRatings = teacher.ratings.map((review) => {
             if (review.userId) {
                 return {
@@ -129,7 +129,7 @@ const get_a_TeacherReviews = async (req, res) => {
             }
 
         });
-        console.log(teacher, "and", populatedRatings);
+        // console.log(teacher, "and", populatedRatings);
 
         res.status(200).json(populatedRatings);
     } catch (err) {

@@ -103,7 +103,7 @@ const addYearlyRecordFallAndSpring = async (req, res) => {
 
         subject.years.push(yearCreate._id)
         await subject.save()
-        console.log(subject)
+        // console.log(subject)
 
         res.status(200).json({ message: `Year Created with Document Fall: ${fall}, and Spring: ${spring}` })
     } catch (error) {

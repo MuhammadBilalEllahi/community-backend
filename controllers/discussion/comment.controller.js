@@ -9,7 +9,7 @@ const addCommentToDiscussion = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
-        console.log(user)
+        // console.log(user)
         if (!user) {
             throw new Error('User not found');
         }
@@ -17,7 +17,7 @@ const addCommentToDiscussion = async (req, res) => {
         const comment = new Comment({ content: commentContent, user: user._id });
         await comment.save();
         const discussion = await Discussion.findById(toBeDiscussedId);
-        console.log("Dis ", discussion)
+        // console.log("Dis ", discussion)
         discussion.comments.push(comment._id);
         await discussion.save();
         res.status(200).json(comment)
