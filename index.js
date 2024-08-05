@@ -48,18 +48,18 @@ const commentRouter = require('./routes/discussion/comment.route.js');
 
 
 app.use("/api/auth", authRouter)
-app.use('/oauth', oAuthRouter);
+app.use('/api/oauth', oAuthRouter);
 app.use('/request', requestRoute);
 app.use('/email', emailRoute);
 
 app.use('/api/teachers', teacherRoute);
-app.use("/department", departmentRouter)
-app.use("/course", courseRouter)
-app.use("/subject", subjectRouter)
-app.use("/pastpapers", servePDFRouter)
+app.use("/api/department", departmentRouter)
+app.use("/api/course", courseRouter)
+app.use("/api/subject", subjectRouter)
+app.use("/api/pastpapers", servePDFRouter)
 
-app.use("/discussion", discussionRouter)
-app.use("/comment", commentRouter)
+app.use("/api/discussion", discussionRouter)
+app.use("/api/comment", commentRouter)
 
 
 const startServer = () => {

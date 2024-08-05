@@ -6,7 +6,7 @@ const loginWithGoogle = async (req, res, next) => {
     res.header("Access-Control-Allow-Origin", 'https://community-backend-production-e156.up.railway.app/');
     res.header("Access-Control-Allow-Credentials", 'true');
     res.header("Referrer-Policy", "no-referrer-when-downgrade");
-    const redirectURL = 'https://community-backend-production-e156.up.railway.app//oauth';
+    const redirectURL = 'https://community-backend-production-e156.up.railway.app/api/oauth';
 
     const oAuth2Client = new OAuth2Client(
         process.env.CLIENT_ID,

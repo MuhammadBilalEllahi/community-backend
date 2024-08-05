@@ -158,7 +158,7 @@ const getOAuthClient = async (req, res, next) => {
 
     // console.log("The code is : ", code);
     try {
-        const redirectURL = "https://community-backend-production-e156.up.railway.app//oauth"
+        const redirectURL = "https://community-backend-production-e156.up.railway.app/api/oauth"
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
