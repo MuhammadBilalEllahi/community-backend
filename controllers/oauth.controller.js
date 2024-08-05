@@ -158,7 +158,7 @@ const getOAuthClient = async (req, res, next) => {
 
     // console.log("The code is : ", code);
     try {
-        const redirectURL = "https://community-backend-production-e156.up.railway.app/api/oauth"
+        const redirectURL = `${process.env.G_URI}/oauth`
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
@@ -175,7 +175,7 @@ const getOAuthClient = async (req, res, next) => {
         let user_Id = userId.toString().split("'")[0];
         // console.log("USer id ", user_Id)
 
-        res.redirect(303, `https://comsain.vercel.app/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
+        res.redirect(303, `${process.env.G_URI}/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
@@ -197,7 +197,7 @@ const getOAuthClient = async (req, res, next) => {
 // Get User Info
 const getUserDataFetch = async (req, res) => {
 
-    res.setHeader('Access-Control-Allow-Origin', 'https://community-backend-production-e156.up.railway.app/');
+    res.setHeader('Access-Control-Allow-Origin', `${process.env.G_URI}`);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     const { id_token } = req.query;
     // console.log("token is", id_token, "\n");

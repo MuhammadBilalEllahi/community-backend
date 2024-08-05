@@ -174,12 +174,12 @@ const login = async (req, res) => {
         if (!user.google_EmailVerified) {
             if (is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    // console.log("universityEmailVerified Not")
+                    console.log("universityEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             } else if (!is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    // console.log("personalEmailVerified Not")
+                    console.log("personalEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             }
@@ -204,9 +204,10 @@ const login = async (req, res) => {
 
         req.user = newTokenToUser;
 
+
         res.status(201).json({ token: token, mUserId: newTokenToUser._id });
     } catch (error) {
-        // console.log("Error in- login-controller: ", error.message)
+        console.log("Error in- login-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" });
         // throw new Error("Error in- login-controller: ", error)
     }
