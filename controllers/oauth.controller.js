@@ -127,7 +127,7 @@ function getExpirationDate(isUniversityMail, test_pass) {
     }
 
 }
-async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 3, delay = 1000) {
+async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 2, delay = 1000) {
     for (let i = 0; i < retries; i++) {
         try {
             const r = await oAuth2Client.getToken(code);
@@ -148,31 +148,32 @@ const getOAuthClient = async (req, res, next) => {
 
     const code = req.query.code;
 
-    // console.log("The code is : ", code);
+    console.log("The code is : ", code);
     try {
-        const redirectURL = `${process.env.G_URI}/oauth`
+        const redirectURL = `${process.env.G_REDIRECT_URI}/oauth`
         const oAuth2Client = new OAuth2Client(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
             redirectURL
         );
+        console.log("oatuht 2 clien t", oAuth2Client)
         const user = await retryOAuth2ClientGetToken(oAuth2Client, code);
         // await oAuth2Client.setCredentials(r.tokens);
-        // console.info('Tokens acquired.');
+        console.info('Tokens acquired.', user);
         // const user = oAuth2Client.credentials;
-        // console.log('credentials', user);
+        console.log('credentials', user);
         const userId = await getUserData(oAuth2Client.credentials.access_token, user, req, res);
         if (userId.statusCode === 422) return;
         // console.log("User ID", userId.statusCode)
         let user_Id = userId.toString().split("'")[0];
         // console.log("USer id ", user_Id)
 
-        res.redirect(303, `${process.env.G_URI}/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
+        res.redirect(303, `${process.env.G_REDIRECT_URI}/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
 
         // res.status(200).json(`token: ${user.access_token}`) dont do this
 
     } catch (err) {
-        console.log('Error logging in with OAuth2 user', err.message, "and ", err.code, "and ", err.statusCode);
+        console.log('Error logging in with OAuth2 user', err.message);
         if (err.code !== 'ERR_HTTP_HEADERS_SENT') {
             res.status(500).json({ "error": err.message })
         }
