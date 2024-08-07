@@ -107,14 +107,6 @@ async function getUserData(access_token, user, req, res) {
 
     }
 
-
-    // console.log("The HD is ", data.hd)
-    // if (data.email.includes("@cuilahore.edu.pk") && data.hd === 'cuilahore.edu.pk') {
-    //     console.log("CUI Lahore")
-    // }
-    // else {
-    //     console.log("Only CUI domains can login in")
-    // }
 }
 function getExpirationDate(isUniversityMail, test_pass) {
     if (!isUniversityMail) {

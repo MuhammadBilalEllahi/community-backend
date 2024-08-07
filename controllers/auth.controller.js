@@ -78,10 +78,7 @@ const signupR = async (req, res) => {
             res.status(400).json({ error: "Invalid User Data" });
         }
     } catch (error) {
-        console.log(
-            "Error in- signup-registered-student-controller: ",
-            error.message
-        );
+        console.log("Error in- signup-registered-student-controller: ", error.message);
         res.status(500).json({ error: "Internal Server Error" });
         // throw new Error("Error in- signup-controller: ", error)
     }
