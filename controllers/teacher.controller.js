@@ -75,6 +75,7 @@ const rateATeacher = async (req, res) => {
         if (existingRatingIndex !== -1) {
             teacher.ratings[existingRatingIndex].rating = rating;
             teacher.ratings[existingRatingIndex].comment = comment;
+            teacher.ratings[existingRatingIndex].__v += 1;
         } else {
             teacher.ratings.push({ userId: student._id, rating, comment });
         }
@@ -97,38 +98,35 @@ const get_a_TeacherReviews = async (req, res) => {
     const { id } = req.query;
 
     try {
-        const teacher = await Teacher.findById(id).populate({
+        const teacher = await Teacher.findById(id).select("ratings rating comment updatedAt __v").populate({
             path: "ratings.userId",
-            select: "_id name personalEmail universityEmail profilePic universityEmailVerified personalEmailVerified",
+            select: "_id name personalEmail universityEmail profilePic universityEmailVerified personalEmailVerified ",
         });
         if (!teacher) {
             return res.status(404).json({ message: "Teacher not found" });
         }
-        // console.log(teacher)
-        const populatedRatings = teacher.ratings.map((review) => {
-            if (review.userId) {
-                return {
-                    rating: review.rating,
-                    comment: review.comment,
-                    userId: {
-                        "_id": review.userId._id,
-                        "name": review.userId.name,
-                        "personalEmail": review.userId.personalEmail,
-                        "universityEmail": review.userId.universityEmail,
-                        "profilePic": review.userId.profilePic,
-                        "universityEmailVerified": review.userId.universityEmailVerified,
-                        "personalEmailVerified": review.userId.personalEmailVerified
-                    }
-                }
-            } else {
-                return {
-                    rating: review.rating,
-                    comment: review.comment,
-                    userId: null
-                };
-            }
 
+        const populatedRatings = teacher.ratings.map((review) => {
+            const userIdData = review.userId ? {
+                "_id": review.userId._id,
+                "name": review.userId.name,
+                "personalEmail": review.userId.personalEmail,
+                "universityEmail": review.userId.universityEmail,
+                "profilePic": review.userId.profilePic,
+                "universityEmailVerified": review.userId.universityEmailVerified,
+                "personalEmailVerified": review.userId.personalEmailVerified,
+
+            } : null;
+
+            return {
+                rating: review.rating,
+                comment: review.comment,
+                __v: review.__v,
+                updatedAt: review.updatedAt,
+                userId: userIdData
+            };
         });
+
         // console.log(teacher, "and", populatedRatings);
 
         res.status(200).json(populatedRatings);
