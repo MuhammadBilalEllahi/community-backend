@@ -19,6 +19,9 @@ const RedisStore = require('connect-redis').default;
 
 const Redis = require('ioredis');
 const redis = new Redis(process.env.REDIS_URL);
+redis.on('error', (err) => {
+    console.error('Redis error:', err);
+});
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
