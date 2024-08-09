@@ -1,19 +1,16 @@
 const User = require("../models/user.model.js");
 const bcryptjs = require("bcryptjs");
 const generateToken = require("../utils/generate.token.js");
-const { OAuth2Client } = require("google-auth-library");
 const { resendEmail } = require("./email.controller.js");
 const jwt = require("jsonwebtoken");
 
 const signupR = async (req, res) => {
-    // console.log(req.body);
+
     try {
         const { universityEmail, universityEmailPassword } = req.body;
+        const user = await User.findOne({ universityEmail }).select('universityEmail');
 
-        // if (password !== confirmPassword) return res.status(400).json({ error: "password do not match" })
-        const user = await User.findOne({ universityEmail });
-
-        if (user) return res.status(400).json({ error: "User already Exists" });
+        if (user) return res.status(400).json({ error: "Invalid Keys" }); // do not tell user if such account already exists
         // fa21-bcs-058
 
         const saltRound = await bcryptjs.genSalt(10);
@@ -21,9 +18,7 @@ const signupR = async (req, res) => {
             universityEmailPassword,
             saltRound
         );
-
         const username = universityEmail.split("@")[0];
-        // console.log("here");
         const userCreate = new User({
             universityEmail: universityEmail,
             password: hashedPassowrd,
@@ -42,38 +37,23 @@ const signupR = async (req, res) => {
                 res
             );
             await userCreate.save();
-            // console.log("her2e");
+
             const datas = {
                 name: "",
                 email: universityEmail,
                 subject: "Account Activation - Test",
                 message:
-                    "Please Activate your account within 7 day, otherwise your record will be deleted. To ensure security, this policy is implemented",
+                    "Please Activate your account within 7 day, otherwise your record will be deleted. To ensure security, this policy is implemented \n Link will be expired once use and within a day",
                 html: `
                 <h2> Please Follow this Link to Activate Account</p><br/> 
-                <a href="https://comsain.vercel.app/auth/registered/update-info?id=${token}" >Activate Here</a>
+                <a href="${process.env.G_REDIRECT_URI}/auth/registered/update-info?id=${token}" >Activate Here</a>
                 `,
             };
 
             await resendEmail(datas, req, res);
 
-            res
-                .status(200)
-                .json({
-                    message: "Account will be deleted if not activated within a week",
-                });
+            res.status(200).json({ message: "Account will be deleted if not activated within a week", });
 
-            // res.status(200).json({
-            //     redirectUrl: `https://community-backend-production-e156.up.railway.app/auth/registered/update-info?id=${userCreate._id}`
-            // })
-
-            // res.status(201).json({
-            //     _id: userCreate._id,
-            //     fullName: userCreate.fullName,
-            //     username: userCreate.username,
-            //     profilePic: userCreate.profilePic
-
-            // })
         } else {
             res.status(400).json({ error: "Invalid User Data" });
         }
@@ -84,6 +64,29 @@ const signupR = async (req, res) => {
     }
 };
 
+
+
+
+
+const MAX_URLS = 10;
+
+const validateUrls = (urls) => {
+    if (!Array.isArray(urls)) {
+        return false;
+    }
+    if (urls.length > MAX_URLS) {
+        return false;
+    }
+    return urls.every(url => {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    });
+};
+
 const updateInfoR = async (req, res) => {
     const { username, personalEmail, phoneNumber, urls } = req.body;
     const { id } = req.query;
@@ -92,21 +95,42 @@ const updateInfoR = async (req, res) => {
         const decodedJwt = jwt.decode(id, process.env.JWT_SECRET);
         // console.log("\nDecoded:", decodedJwt, "\n")
 
-        const _id = decodedJwt._d;
+        const _id = decodedJwt._id;
+        // console.log(_id)
         const findUser = await User.findOne({ _id: _id });
-        if (!findUser) return res.status(404).json({ message: "No User Found" });
+        // console.log(findUser)
+        if (!findUser) return res.status(404).json({ message: "Invalid or expired token" });
+
+
+        const isUserWithSamePersonalEmailExists = await User.findOne({ personalEmail: personalEmail });
+        if (isUserWithSamePersonalEmailExists) return res.status(304).json({ message: "Invalid personal email or exists already" });//email already exists
 
         // if(findUser.universityEmailVerified) return
+        // if (!validateUrls(urls)) {
+        //     return res.status(400).json({ message: `Invalid URLs format or exceeds limit` });
+        // }
 
-        const jwtToken = generateToken(findUser._id);
+
+        const jwtToken = await generateToken(
+            {
+                _id: findUser._id,
+                name: findUser.name,
+                picture: findUser.profilePic,
+                email: findUser.universityEmail,
+                email_verified: findUser.universityEmailVerified
+            },
+            res
+        );
         const response = await User.findOneAndUpdate(
             { _id: findUser._id },
             {
                 username,
                 personalEmail: personalEmail,
+                personalEmailVerified: true,
                 phoneNumber,
                 token: jwtToken,
                 universityEmailVerified: true,
+                urls
             }
         );
         const datas = {
@@ -116,7 +140,7 @@ const updateInfoR = async (req, res) => {
             message: "Thanks For Securing Your Account",
             html: `
             <h2> Now You Can Login to Your Account</p><br/> 
-            <a href="https://comsain.vercel.app/login" >Login To Your Account</a>
+            <a href="${process.env.G_REDIRECT_URI}/login" >Login To Your Account</a>
             `,
         };
 
@@ -133,6 +157,12 @@ const updateInfoR = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
+
+
+
+
 
 const login = async (req, res) => {
     try {

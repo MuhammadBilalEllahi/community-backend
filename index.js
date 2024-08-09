@@ -13,22 +13,33 @@ const cors = require("cors")
 const morgan = require("morgan")
 const cookieParser = require("cookie-parser")
 const mongoDB = require("./db/connect.mongodb.js")
-
+const session = require('express-session')
+const RedisStore = require('connect-redis').default;
+const redisClient = require("./db/reddis.js")
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
     credentials: true
 }))
-
-
 app.use(cookieParser())
 app.use(morgan("dev"))
-
-
 dotenv.config()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 60 * 60 * 1000
+    },
+    rolling: true,
+    store: new RedisStore({
+        client: redisClient,
+
+    })
+}))
 
 
 

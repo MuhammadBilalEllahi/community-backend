@@ -76,6 +76,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
+    urls: [String],
     token: {
         type: String,
         default: ''

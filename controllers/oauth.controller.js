@@ -57,8 +57,6 @@ async function getUserData(access_token, user, req, res) {
 
         await userCreate.save()
         if (userCreate) {
-
-
             const datas = {
                 name: data.name,
                 email: data.email,
@@ -66,41 +64,83 @@ async function getUserData(access_token, user, req, res) {
                 message: "Thank You for Creating account in Comsats Colab",
                 html: `
                 <h2>Please Login to Your Account</p><br/> 
-                <p>This are your passcode, Please change it as soon as you receive it.</p>
+                <p>This is your passcode, Please change it as soon as you receive it.</p>
                 Password: <strong>${test_pass}</strong>
                 Username: <strong>${test_pass}</strong>
-                <a href="https://community-backend-production-e156.up.railway.app/login" >Verify Comsian Account</a>
+                <a href="${process.env.G_REDIRECT_URI}/login" >Login Comsian Account</a>
                 `
             }
-
             await resendEmail(datas, req, res)
-
             return userCreate._id
         }
     } else {
         if (universityEmail_UserDB) {
-            const Id = universityEmail_UserDB.universityEmail
-            // console.log("The id: ", Id)
-            const response = await User.findOneAndUpdate({ universityEmail: Id }, {
-                access_token: user.access_token,
-                token: user.id_token,
-                refresh_token: user.refresh_token,
-            }, { new: true, select: "_id" })
+            const mail = universityEmail_UserDB.universityEmail;
+
+            const beforeDomain = data.email.split("@")[0];
+            const universityEmailExpirationDate = getExpirationDate(true, beforeDomain)
+
+            const isVerified = await User.findOne({ universityEmail: mail }).select("google_EmailVerified universityEmailVerified name profilePic username")
+            let response;
+            if (isVerified.universityEmail) {
+                response = await User.findOneAndUpdate({ universityEmail: mail }, {
+                    access_token: user.access_token,
+                    token: user.id_token,
+                    refresh_token: user.refresh_token,
+                }, { new: true, select: "_id" })
+
+
+            } else {
+                response = await User.findOneAndUpdate({ universityEmail: mail }, {
+                    name: isVerified.name ? isVerified.name : data.name,
+                    universityEmailVerified: true,
+                    profilePic: (isVerified.profilePic && isVerified.profilePic !== "") ? isVerified.profilePic : data.picture,
+                    google_EmailVerified: data.email_verified,
+                    username: isVerified.username ? isVerified.username : beforeDomain,
+                    universityEmailExpirationDate: universityEmailExpirationDate,
+                    universityEmail: isVerified.universityEmail ? isVerified.universityEmail : mail,
+
+                    access_token: user.access_token,
+                    token: user.id_token,
+                    refresh_token: user.refresh_token,
+
+                }, { new: true, select: "_id" })
+            }
+
             // console.log("Uni Email Already Signed Up: ", response)
             return response._id
 
         }
         if (personalEmail_UserDB) {
-            const Id = personalEmail_UserDB.personalEmail
-            // console.log("The id: ", Id)
-            const response = await User.findOneAndUpdate({
-                personalEmail: Id
-            }, {
-                access_token: user.access_token,
-                token: user.id_token,
-                refresh_token: user.refresh_token,
-            },
-                { new: true, select: "_id" })
+            const mail = personalEmail_UserDB.personalEmail;
+            const beforeDomain = data.email.split("@")[0];
+
+            const isVerified = await User.findOne({ personalEmail: mail }).select("google_EmailVerified personalEmailVerified name profilePic username")
+            let response;
+
+            if (isVerified.personalEmail) {
+
+                response = await User.findOneAndUpdate({ personalEmail: mail }, {
+                    access_token: user.access_token,
+                    token: user.id_token,
+                    refresh_token: user.refresh_token,
+                }, { new: true, select: "_id" })
+            } else {
+                response = await User.findOneAndUpdate({ personalEmail: mail }, {
+                    name: isVerified.name ? isVerified.name : data.name,
+                    personalEmailVerified: true,
+                    profilePic: (isVerified.profilePic && isVerified.profilePic !== "") ? isVerified.profilePic : data.picture,
+                    google_EmailVerified: data.email_verified,
+                    username: isVerified.username ? isVerified.username : beforeDomain,
+                    personalEmail: isVerified.personalEmail ? isVerified.personalEmail : mail,
+
+                    access_token: user.access_token,
+                    token: user.id_token,
+                    refresh_token: user.refresh_token,
+
+                }, { new: true, select: "_id" })
+            }
+
             // console.log("Personal Email Already Signed Up: ", response)
             return response._id
         }
