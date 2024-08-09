@@ -15,7 +15,10 @@ const cookieParser = require("cookie-parser")
 const mongoDB = require("./db/connect.mongodb.js")
 const session = require('express-session')
 const RedisStore = require('connect-redis').default;
-const redisClient = require("./db/reddis.js")
+// const redisClient = require("./db/reddis.js")
+
+const Redis = require('ioredis');
+const redis = new Redis(process.env.REDIS_URL);
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
@@ -36,7 +39,7 @@ app.use(session({
     },
     rolling: true,
     store: new RedisStore({
-        client: redisClient,
+        client: redis,
 
     })
 }))
