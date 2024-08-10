@@ -3,10 +3,8 @@
 const express = require("express")
 const app = express()
 const PORT = process.env.PORT || 8080
-
 const http = require('http');
 const socketIo = require('socket.io');
-
 const dotenv = require("dotenv")
 const bodyParser = require("body-parser");
 const cors = require("cors")
@@ -14,14 +12,18 @@ const morgan = require("morgan")
 const cookieParser = require("cookie-parser")
 const mongoDB = require("./db/connect.mongodb.js")
 const session = require('express-session')
-const RedisStore = require('connect-redis').default;
+const MongoStore = require('connect-mongo');
+// const RedisStore = require('connect-redis').default;
 // const redisClient = require("./db/reddis.js")
+// const Redis = require('ioredis');
 
-const Redis = require('ioredis');
-const redis = new Redis(process.env.REDIS_URL);
-redis.on('error', (err) => {
-    console.error('Redis error:', err);
-});
+dotenv.config()
+
+
+// const redis = new Redis(process.env.REDIS_URL);
+// redis.on('error', (err) => {
+//     console.error('Redis error:', err);
+// });
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
@@ -29,23 +31,27 @@ app.use(cors({
 }))
 app.use(cookieParser())
 app.use(morgan("dev"))
-dotenv.config()
-
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 60 * 60 * 1000
+        maxAge: 60 * 60 * 1000, // 1 hour
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Secure cookies in production (requires HTTPS)
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Set 'none' for cross-site cookies in production
     },
     rolling: true,
-    store: new RedisStore({
-        client: redis,
-
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_DB_URI,
+        collectionName: 'sessions',
+        ttl: 14 * 24 * 60 * 60 // 14 days
     })
-}))
+}));
+
 
 
 
