@@ -20,6 +20,7 @@ const MongoStore = require('connect-mongo');
 dotenv.config()
 
 
+
 // const redis = new Redis(process.env.REDIS_URL);
 // redis.on('error', (err) => {
 //     console.error('Redis error:', err);
@@ -127,7 +128,10 @@ server.listen(PORT, () => {
     console.log(`Server Running on ${PORT}`);
 });
 
-
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
 
 
 
