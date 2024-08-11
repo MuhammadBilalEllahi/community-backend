@@ -13,6 +13,7 @@ const cookieParser = require("cookie-parser")
 const mongoDB = require("./db/connect.mongodb.js")
 const session = require('express-session')
 const MongoStore = require('connect-mongo');
+const protectRoute = require('./middlewares/protectRoute.js')
 // const RedisStore = require('connect-redis').default;
 // const redisClient = require("./db/reddis.js")
 // const Redis = require('ioredis');
@@ -74,19 +75,20 @@ const discussionRouter = require('./routes/discussion/discussion.route.js');
 const commentRouter = require('./routes/discussion/comment.route.js');
 
 
+
 app.use("/api/auth", authRouter)
 app.use('/api/oauth', oAuthRouter);
 app.use('/api/request', requestRoute);
 app.use('/email', emailRoute);
 
-app.use('/api/teachers', teacherRoute);
-app.use("/api/department", departmentRouter)
-app.use("/api/course", courseRouter)
-app.use("/api/subject", subjectRouter)
-app.use("/api/pastpapers", servePDFRouter)
+app.use('/api/teachers', protectRoute, teacherRoute);
+app.use("/api/department", protectRoute, departmentRouter)
+app.use("/api/course", protectRoute, courseRouter)
+app.use("/api/subject", protectRoute, subjectRouter)
+app.use("/api/pastpapers", protectRoute, servePDFRouter)
 
-app.use("/api/discussion", discussionRouter)
-app.use("/api/comment", commentRouter)
+app.use("/api/discussion", protectRoute, discussionRouter)
+app.use("/api/comment", protectRoute, commentRouter)
 
 
 const startServer = () => {

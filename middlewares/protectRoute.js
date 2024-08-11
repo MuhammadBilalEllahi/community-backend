@@ -4,22 +4,17 @@ const User = require("../models/user.model.js");
 
 const protectRoute = async (req, res, next) => { ///req res order is must
     try {
-        const token = req.cookies.jwt;
+        if (req.session.user) {
 
-        if (!token) return res.status(401).json({ error: "Un Authorized - No Token" })
+            const _id = req.session.user._id
+            const user = await User.findOne({ _id }).select("-password")
+            if (!user) return res.status(404).json({ error: "User has no privilidges" })
+            next()
+        } else {
+            res.status(401).json({ error: "Not authenticated" });
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        }
 
-        if (!decoded) return res.status(401).json({ error: "Un Authorized - InValid Token" })
-
-        const _id = decoded.userId
-        const user = await User.findOne({ _id }).select("-password")
-
-        if (!user) return res.status(404).json({ error: "User Not Found" })
-
-        req.user = user;
-
-        next()
 
     } catch (error) {
         console.log("Error in- protect Route-middleware: ", error.message)
@@ -28,3 +23,25 @@ const protectRoute = async (req, res, next) => { ///req res order is must
     }
 }
 module.exports = protectRoute;
+
+
+
+// const session = async (req, res) => {
+
+//     console.log("Req user:", req.session.user)
+//     if (req.session.user) {
+//         res.status(200).json({
+//             _id: req.session.user._id,
+//             name: req.session.user.name,
+//             email: req.session.user.email,
+//             picture: req.session.user.picture,
+//             username: req.session.user.username,
+//             token: req.session.user.token
+//         });
+
+
+//     } else {
+//         res.status(401).json({ error: "Not authenticated" });
+//     }
+
+// }
