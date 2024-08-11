@@ -11,7 +11,8 @@ async function getUserData(access_token, user, req, res) {
     // console.log("Access Token", access_token)
     // console.log('response', response);
     const data = await response.json();
-    // console.log('data', data); console.log('data', data.email, data.email_verified);
+    console.log('data', data);
+    //  console.log('data', data.email, data.email_verified);
 
     const universityEmail_UserDB = await User.findOne({ universityEmail: data.email });
     const personalEmail_UserDB = await User.findOne({ personalEmail: data.email });
@@ -28,15 +29,17 @@ async function getUserData(access_token, user, req, res) {
         if (!(universityEmailRegex.test(data.email))) {
             return res.status(422).json({ message: "Only Organizational Accounts are Allowed to Signup \nor Signup on /register/student-type" })
         }
-        const test_pass = data.email.split("@")[0]
+        const beforeDomain = data.email.split("@")[0]
         const emailDomain = data.email.split("@")[1]
-        // console.log("split email ", test_pass, "and ", emailDomain)
+
+
+        const username = generateUsernameFromEmail(beforeDomain)
 
         const isUniversityMail = emailDomain === "cuilahore.edu.pk" || emailDomain === "cuiislamabad.edu.pk";
-        const universityEmailExpirationDate = getExpirationDate(isUniversityMail, test_pass)
+        const universityEmailExpirationDate = getExpirationDate(isUniversityMail, beforeDomain)
 
         const saltRound = await bcryptjs.genSalt(10)
-        const hashedPassowrd = await bcryptjs.hash(test_pass, saltRound)
+        const hashedPassowrd = await bcryptjs.hash(beforeDomain + "" + username, saltRound)//give option to user to change it if needed otherwise never usable if uses google to signin
 
         const userCreate = new User({
             universityEmail: isUniversityMail ? data.email : null,
@@ -46,12 +49,14 @@ async function getUserData(access_token, user, req, res) {
             universityEmailVerified: isUniversityMail,
             personalEmailVerified: !isUniversityMail,
             profilePic: data.picture,
+            google_EmailVerified: data.email_verified,
+            username: username,
+            universityEmailExpirationDate: universityEmailExpirationDate,
+
+
             access_token: user.access_token,
             token: user.id_token,
             refresh_token: user.refresh_token,
-            google_EmailVerified: data.email_verified,
-            username: test_pass,
-            universityEmailExpirationDate: universityEmailExpirationDate
 
         })
 
@@ -63,22 +68,40 @@ async function getUserData(access_token, user, req, res) {
                 subject: "Account Created!",
                 message: "Thank You for Creating account in Comsats Colab",
                 html: `
-                <h2>Please Login to Your Account</p><br/> 
-                <p>This is your passcode, Please change it as soon as you receive it.</p>
-                Password: <strong>${test_pass}</strong>
-                Username: <strong>${test_pass}</strong>
+                <h2>Enjoy Your webapp, wanna secure it more?</p><br/> 
+                <p>You have not created a password but we did create a username for you. Check it out in profile section.\n If you like, you could proceed using Google to Sign-in </p>
                 <a href="${process.env.G_REDIRECT_URI}/login" >Login Comsian Account</a>
                 `
             }
             await resendEmail(datas, req, res)
+
+
+            req.session.user = {
+                _id: userCreate._id,
+                name: data.name,
+                email: data.email,
+                picture: data.picture,
+                username: userCreate.username,
+
+                access_token: user.access_token,
+                token: user.id_token,
+                refresh_token: user.refresh_token,
+
+            };
+            req.session.save((err) => {
+                if (err) {
+                    console.log('Session save error:', err);
+
+                }
+                console.log("Session user in Longin Controller : ", req.session.user)
+
+            });
+
             return userCreate._id
         }
     } else {
         if (universityEmail_UserDB) {
             const mail = universityEmail_UserDB.universityEmail;
-
-            const beforeDomain = data.email.split("@")[0];
-            const universityEmailExpirationDate = getExpirationDate(true, beforeDomain)
 
             const isVerified = await User.findOne({ universityEmail: mail }).select("google_EmailVerified universityEmailVerified name profilePic username")
             let response;
@@ -87,16 +110,22 @@ async function getUserData(access_token, user, req, res) {
                     access_token: user.access_token,
                     token: user.id_token,
                     refresh_token: user.refresh_token,
-                }, { new: true, select: "_id" })
+                }, { new: true, select: "-password" })
 
 
             } else {
+
+                const beforeDomain = data.email.split("@")[0];
+                const universityEmailExpirationDate = getExpirationDate(true, beforeDomain)
+
+                const username = generateUsernameFromEmail(beforeDomain)
+
                 response = await User.findOneAndUpdate({ universityEmail: mail }, {
                     name: isVerified.name ? isVerified.name : data.name,
                     universityEmailVerified: true,
                     profilePic: (isVerified.profilePic && isVerified.profilePic !== "") ? isVerified.profilePic : data.picture,
                     google_EmailVerified: data.email_verified,
-                    username: isVerified.username ? isVerified.username : beforeDomain,
+                    username: isVerified.username ? isVerified.username : username,
                     universityEmailExpirationDate: universityEmailExpirationDate,
                     universityEmail: isVerified.universityEmail ? isVerified.universityEmail : mail,
 
@@ -104,8 +133,30 @@ async function getUserData(access_token, user, req, res) {
                     token: user.id_token,
                     refresh_token: user.refresh_token,
 
-                }, { new: true, select: "_id" })
+                }, { new: true, select: "-password" })
             }
+
+
+            req.session.user = {
+                _id: response._id,
+                name: data.name,
+                email: data.email,
+                picture: data.picture,
+                username: response.username,
+
+                access_token: user.access_token,
+                token: user.id_token,
+                refresh_token: user.refresh_token,
+
+            };
+            req.session.save((err) => {
+                if (err) {
+                    console.log('Session save error:', err);
+
+                }
+                console.log("Session user in Longin Controller : ", req.session.user)
+
+            });
 
             // console.log("Uni Email Already Signed Up: ", response)
             return response._id
@@ -113,7 +164,7 @@ async function getUserData(access_token, user, req, res) {
         }
         if (personalEmail_UserDB) {
             const mail = personalEmail_UserDB.personalEmail;
-            const beforeDomain = data.email.split("@")[0];
+
 
             const isVerified = await User.findOne({ personalEmail: mail }).select("google_EmailVerified personalEmailVerified name profilePic username")
             let response;
@@ -124,23 +175,46 @@ async function getUserData(access_token, user, req, res) {
                     access_token: user.access_token,
                     token: user.id_token,
                     refresh_token: user.refresh_token,
-                }, { new: true, select: "_id" })
+                }, { new: true, select: "-password" })
             } else {
+                const beforeDomain = data.email.split("@")[0];
+                const username = generateUsernameFromEmail(beforeDomain)
+
                 response = await User.findOneAndUpdate({ personalEmail: mail }, {
                     name: isVerified.name ? isVerified.name : data.name,
                     personalEmailVerified: true,
                     profilePic: (isVerified.profilePic && isVerified.profilePic !== "") ? isVerified.profilePic : data.picture,
                     google_EmailVerified: data.email_verified,
-                    username: isVerified.username ? isVerified.username : beforeDomain,
+                    username: isVerified.username ? isVerified.username : username,
                     personalEmail: isVerified.personalEmail ? isVerified.personalEmail : mail,
 
                     access_token: user.access_token,
                     token: user.id_token,
                     refresh_token: user.refresh_token,
 
-                }, { new: true, select: "_id" })
+                }, { new: true, select: "-password" })
             }
 
+            req.session.user = {
+                _id: response._id,
+                name: data.name,
+                email: data.email,
+                picture: data.picture,
+                username: response.username,
+
+                access_token: user.access_token,
+                token: user.id_token,
+                refresh_token: user.refresh_token,
+
+            };
+            req.session.save((err) => {
+                if (err) {
+                    console.log('Session save error:', err);
+
+                }
+                console.log("Session user in Longin Controller : ", req.session.user)
+
+            });
             // console.log("Personal Email Already Signed Up: ", response)
             return response._id
         }
@@ -148,12 +222,22 @@ async function getUserData(access_token, user, req, res) {
     }
 
 }
-function getExpirationDate(isUniversityMail, test_pass) {
+
+const generateUsernameFromEmail = (emailPart) => {
+
+    const cleanedEmailPart = emailPart.replace(/[^a-zA-Z0-9]/g, '');
+    const uniqueSuffix = Date.now().toString().slice(-4);
+    const username = `${cleanedEmailPart}_${uniqueSuffix}`;
+
+    return username;
+};
+
+function getExpirationDate(isUniversityMail, beforeDomain) {
     if (!isUniversityMail) {
         const endDate = new Date('02/25/2100')
         return endDate;
     } else {
-        const data = test_pass;
+        const data = beforeDomain;
         const session = data.split("-")[0].toLowerCase()
         const fall_or_spring = session.startsWith("fa") ? "fa" : "sp"
         const year = session.split(fall_or_spring)[1]
@@ -200,9 +284,9 @@ const getOAuthClient = async (req, res, next) => {
         // const user = oAuth2Client.credentials;
         const userId = await getUserData(oAuth2Client.credentials.access_token, user, req, res);
         if (userId.statusCode === 422) return;
-        let user_Id = userId.toString().split("'")[0];
 
-        res.redirect(303, `${process.env.G_REDIRECT_URI}/authorizing?sandbox_token=${user.id_token}&user=${user_Id}`);
+
+        res.redirect(303, `${process.env.G_REDIRECT_URI}/authorizing`);
 
 
 
@@ -214,9 +298,6 @@ const getOAuthClient = async (req, res, next) => {
 
 
     }
-    // console.log("Logged in redirecting...")
-    // res.redirect(303, 'https://community-backend-production-e156.up.railway.app/login');
-
 }
 
 

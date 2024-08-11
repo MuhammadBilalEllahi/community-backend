@@ -41,8 +41,8 @@ app.use(session({
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Secure cookies in production (requires HTTPS)
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Set 'none' for cross-site cookies in production
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     },
     rolling: true,
     store: MongoStore.create({
@@ -52,6 +52,8 @@ app.use(session({
     })
 }));
 
+// const crypto = require('crypto')
+// console.log(crypto.randomBytes(6).toString('hex'))
 
 
 
