@@ -54,7 +54,8 @@ app.use(session({
 
 // const crypto = require('crypto')
 // console.log(crypto.randomBytes(6).toString('hex'))
-
+console.log("Production", process.env.NODE_ENV === 'production')
+console.log("Production none? same site: ", process.env.NODE_ENV === 'production' ? 'none' : 'lax')
 
 
 const authRouter = require("./routes/authRoute")
