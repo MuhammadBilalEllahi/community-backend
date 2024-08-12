@@ -20,7 +20,7 @@ const allTeachers = async (req, res) => {
 
 
 const rateATeacher = async (req, res) => {
-    const { teacherId, userId, rating, comment } = req.body;
+    const { teacherId, userId, rating, comment, hideUser = false } = req.body;
 
     if (!teacherId || !userId || rating === undefined) {
         return res.status(400).send("Missing required fields");
@@ -40,13 +40,15 @@ const rateATeacher = async (req, res) => {
             existingRating.rating = rating;
             existingRating.comment = comment;
             existingRating.__v += 1;
+            existingRating.hideUser = hideUser;
             await existingRating.save();
         } else {
             existingRating = new TeacherRating({
                 teacherId,
                 userId,
                 rating,
-                comment
+                comment,
+                hideUser
             });
             await existingRating.save();
             teacher.ratings.push(existingRating._id);
@@ -91,9 +93,7 @@ const get_a_TeacherReviews = async (req, res) => {
             return res.status(404).json({ message: "Teacher not found" });
         }
 
-        // console.log("theacher:", teacher)
-
-
+        console.log("Teacher: ", teacher)
 
 
         const populatedRatings = await Promise.all(teacher.ratings.map(async (review) => {
@@ -109,7 +109,7 @@ const get_a_TeacherReviews = async (req, res) => {
                 "personalEmailVerified": review.userId.personalEmailVerified
             } : null;
 
-
+            // console.log("HIDE USER: ", review.hideUser)
 
             return {
                 rating: review.rating,
@@ -120,9 +120,8 @@ const get_a_TeacherReviews = async (req, res) => {
                 downvoteCount: review.downvoteCount * (-1),
                 updatedAt: review.updatedAt,
                 userId: userIdData,
+                hideUser: review.hideUser,
                 userVote: userVote ? userVote.voteType : 'none'
-
-
             };
         }));
 
