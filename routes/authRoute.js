@@ -7,7 +7,7 @@ const router = express.Router()
 router.post("/signup", signupR)
 router.post("/login", login)
 router.post("/logout", logout)
-router.get('/session', session)
+router.post('/session', session)
 
 router.put("/registered/update-info", updateInfoR)
 
