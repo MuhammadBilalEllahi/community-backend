@@ -34,7 +34,7 @@ const sessionData = session({
     credentials: true,
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
-        httpOnly: process.env.HTTP_ONLY,
+        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         domain: process.env.COOKIE_DOMAIN
