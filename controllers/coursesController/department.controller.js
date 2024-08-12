@@ -126,7 +126,7 @@ const addSubjectsToDepartment = async (req, res) => {
         department.subjects.push(...subjectIds);
         await department.save();
 
-        res.status(200).json({ message: `Subject ${subject.name} and courseCode ${code} added to department ${department.name}` })
+        res.status(200).json({ message: `Subjects and courseCode ${code} added to department ${department.name}` })
 
     } catch (error) {
         res.status(500).json({ error: error.message });

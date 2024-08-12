@@ -93,7 +93,7 @@ const get_a_TeacherReviews = async (req, res) => {
             return res.status(404).json({ message: "Teacher not found" });
         }
 
-        console.log("Teacher: ", teacher)
+        // console.log("Teacher: ", teacher)
 
 
         const populatedRatings = await Promise.all(teacher.ratings.map(async (review) => {
