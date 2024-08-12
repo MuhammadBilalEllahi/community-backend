@@ -1,17 +1,22 @@
-// const mongoose = require('mongoose');
-// const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-// const teacherRatingSchema = new Schema({
+const teacherRatingSchema = new Schema({
+    teacherId: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    hideUser: { type: Boolean, default: false },
 
-//     rating: {
-//         type: Number,
-//         default: 0,
-        
-//     },
-// });
+    upvoteCount: { type: Number, default: 0 },
+    downvoteCount: { type: Number, default: 0 },
+
+    rating: { type: Number, required: true },
+    comment: { type: String },
+    __v: { type: Number, default: 0 }
+}, { timestamps: true });
+
+const TeacherRating = mongoose.model('TeacherRating', teacherRatingSchema);
+
+module.exports = TeacherRating;
 
 
-// const TeacherRating = mongoose.model('TeacherRating', teacherRatingSchema);
-
-// module.exports = TeacherRating;
 

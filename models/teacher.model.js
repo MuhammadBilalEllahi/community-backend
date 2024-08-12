@@ -1,13 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const ratingSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    hideUser: { type: Boolean, default: false },
-    rating: { type: Number, required: true },
-    comment: { type: String },
-    __v: { type: Number, default: 0 }
-}, { timestamps: true });
+
 
 const teacherSchema = new Schema({
     name: {
@@ -46,8 +40,17 @@ const teacherSchema = new Schema({
         type: Number,
         default: 0
     },
+    location: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Campus',
+    },
 
-    ratings: [ratingSchema]
+    ratings: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'TeacherRating',
+        },
+    ]
 });
 
 

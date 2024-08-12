@@ -1,5 +1,8 @@
+const mongoose = require("mongoose");
+const TeacherRating = require("../models/rating.model");
 const Teacher = require("../models/teacher.model");
 const User = require("../models/user.model");
+const UserVote = require("../models/voter/vote.model");
 
 const allTeachers = async (req, res) => {
     try {
@@ -14,99 +17,88 @@ const allTeachers = async (req, res) => {
 // const rateATeacher = async (req, res) => {
 //     const { teacherId, userId, rating } = req.body;
 
-//     if (!teacherId || !userId || rating === undefined) {
-//         return res.status(400).send('Missing required fields');
-//     }
 
-//     try {
-
-//         const teacher = await Teacher.findById(teacherId);
-
-//         if (!teacher) {
-//             return res.status(404).send('Teacher not found');
-//         }
-
-//         const existingRatingIndex = teacher.ratings.findIndex(r => r.userId.toString() === userId.toString());
-
-//         if (existingRatingIndex !== -1) {
-
-//             teacher.ratings[existingRatingIndex].rating = rating;
-//         } else {
-
-//             teacher.ratings.push({ userId, rating });
-//         }
-
-//         const totalRatings = teacher.ratings.length;
-//         const averageRating = teacher.ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
-//         teacher.rating = averageRating;
-
-//         await teacher.save();
-
-//         res.status(200).send('Rating added successfully');
-//     } catch (err) {
-//         res.status(500).send('Server error');
-//     }
-// }
 
 const rateATeacher = async (req, res) => {
     const { teacherId, userId, rating, comment } = req.body;
-
-    // console.log(teacherId, "this", userId, "this", rating, "this", comment);
 
     if (!teacherId || !userId || rating === undefined) {
         return res.status(400).send("Missing required fields");
     }
 
     try {
-        const teacher = await Teacher.findById(teacherId);
 
+        const teacher = await Teacher.findById(teacherId);
         if (!teacher) {
             return res.status(404).send("Teacher not found");
         }
 
-        const student = await User.findById({ _id: userId });
-        // console.log(student)
 
-        const existingRatingIndex = teacher.ratings.findIndex(
-            (r) => r.userId.toString() === student._id.toString()
-        );
+        let existingRating = await TeacherRating.findOne({ teacherId, userId });
 
-        // console.log(existingRatingIndex, "isit");
-        if (existingRatingIndex !== -1) {
-            teacher.ratings[existingRatingIndex].rating = rating;
-            teacher.ratings[existingRatingIndex].comment = comment;
-            teacher.ratings[existingRatingIndex].__v += 1;
+        if (existingRating) {
+            existingRating.rating = rating;
+            existingRating.comment = comment;
+            existingRating.__v += 1;
+            await existingRating.save();
         } else {
-            teacher.ratings.push({ userId: student._id, rating, comment });
+            existingRating = new TeacherRating({
+                teacherId,
+                userId,
+                rating,
+                comment
+            });
+            await existingRating.save();
+            teacher.ratings.push(existingRating._id);
         }
+        const teacherIdObj = new mongoose.Types.ObjectId(teacherId);
 
-        const totalRatings = teacher.ratings.length;
-        const averageRating =
-            teacher.ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings;
+
+        const [sumRatings] = await TeacherRating.aggregate([
+            { $match: { teacherId: teacherIdObj } },
+            { $group: { _id: null, total: { $sum: "$rating" }, count: { $sum: 1 } } }
+        ]);
+
+        const averageRating = sumRatings ? (sumRatings.total / sumRatings.count) : 0;
         teacher.rating = averageRating;
+
+        // console.log("This is Teacher rating:", teacher.rating, "and average: ", averageRating, "sum ", sumRatings)
 
         await teacher.save();
 
-        res.status(200).send("Rating added successfully");
+        res.status(200).send("Rating processed successfully");
     } catch (err) {
-        console.log(err.message);
+        console.error(err.message);
         res.status(500).json({ "Server error": err.message });
     }
 };
+
 
 const get_a_TeacherReviews = async (req, res) => {
     const { id } = req.query;
 
     try {
-        const teacher = await Teacher.findById(id).select("ratings rating comment updatedAt __v").populate({
-            path: "ratings.userId",
-            select: "_id name personalEmail universityEmail profilePic universityEmailVerified personalEmailVerified ",
+
+        const teacher = await Teacher.findById(id).populate({
+            path: 'ratings',
+            populate: {
+                path: 'userId',
+                select: '_id name personalEmail universityEmail profilePic universityEmailVerified personalEmailVerified'
+            }
         });
+
         if (!teacher) {
             return res.status(404).json({ message: "Teacher not found" });
         }
 
-        const populatedRatings = teacher.ratings.map((review) => {
+        // console.log("theacher:", teacher)
+
+
+
+
+        const populatedRatings = await Promise.all(teacher.ratings.map(async (review) => {
+            const userVote = await UserVote.findOne({ reviewId: review._id, userId: review.userId._id });
+            // console.log(userVote)
             const userIdData = review.userId ? {
                 "_id": review.userId._id,
                 "name": review.userId.name,
@@ -114,27 +106,33 @@ const get_a_TeacherReviews = async (req, res) => {
                 "universityEmail": review.userId.universityEmail,
                 "profilePic": review.userId.profilePic,
                 "universityEmailVerified": review.userId.universityEmailVerified,
-                "personalEmailVerified": review.userId.personalEmailVerified,
-
+                "personalEmailVerified": review.userId.personalEmailVerified
             } : null;
+
+
 
             return {
                 rating: review.rating,
                 comment: review.comment,
                 __v: review.__v,
+                _id: review._id,
+                upvoteCount: review.upvoteCount,
+                downvoteCount: review.downvoteCount * (-1),
                 updatedAt: review.updatedAt,
-                userId: userIdData
-            };
-        });
+                userId: userIdData,
+                userVote: userVote ? userVote.voteType : 'none'
 
-        // console.log(teacher, "and", populatedRatings);
+
+            };
+        }));
 
         res.status(200).json(populatedRatings);
     } catch (err) {
-        console.log("error", err.message)
+        console.error("error", err.message);
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
+
 
 const getTeacherReviews = async (req, res) => {
     const { id } = req.query;
@@ -159,6 +157,7 @@ const teacherSpeficicInfo = async (req, res) => {
         if (!teacher) {
             return res.status(404).json({ message: "Teacher not found" });
         }
+        // console.log(teacher)
         res.status(200).json(teacher);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: err.message });
@@ -167,6 +166,192 @@ const teacherSpeficicInfo = async (req, res) => {
 
 
 
+const updateReviewVote = async (req, res) => {
+    const { reviewId, userId, voteType } = req.body;
+
+    if (!reviewId || !userId || !voteType) {
+        return res.status(400).send("Missing required fields");
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const review = await TeacherRating.findById(reviewId).session(session);
+        if (!review) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).send("Review not found");
+        }
+
+        const existingVote = await UserVote.findOne({ reviewId, userId }).session(session);
+
+        if (existingVote) {
+            if (existingVote.voteType === voteType) {
+
+                review[voteType === 'upvote' ? 'upvoteCount' : 'downvoteCount']--;
+                await UserVote.deleteOne({ _id: existingVote._id }).session(session);
+            } else {
+
+                review[existingVote.voteType === 'upvote' ? 'upvoteCount' : 'downvoteCount']--;
+                review[voteType === 'upvote' ? 'upvoteCount' : 'downvoteCount']++;
+                existingVote.voteType = voteType;
+                await existingVote.save();
+            }
+        } else {
+
+            review[voteType === 'upvote' ? 'upvoteCount' : 'downvoteCount']++;
+            await UserVote.create([{ reviewId, userId, voteType }], { session });
+        }
+
+        await review.save();
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({
+            upvoteCount: review.upvoteCount,
+            downvoteCount: review.downvoteCount * (-1)
+
+        });
+    } catch (error) {
+        console.error("Error updating vote:", error);
+        await session.abortTransaction();
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
+
+
+
+const deleteReview = async (req, res) => {
+    const { teacherId, userId } = req.body;
+
+    if (!teacherId || !userId) {
+        return res.status(400).send("Missing required fields");
+    }
+
+    try {
+        const review = await TeacherRating.findOneAndDelete({ teacherId, userId });
+
+        if (!review) {
+            return res.status(404).send("Review not found");
+        }
+
+        const teacher = await Teacher.findById(teacherId);
+        if (teacher) {
+            const reviewRating = review.rating;
+            const totalRatings = teacher.ratings.length;
+
+
+            if (totalRatings > 1) {
+                const newRating = ((teacher.rating * totalRatings) - reviewRating) / (totalRatings - 1);
+                teacher.ratings = teacher.ratings.filter(rating => !rating.equals(review._id));
+                teacher.rating = newRating;
+            } else {
+
+                teacher.rating = 0;
+                teacher.ratings = [];
+            }
+
+
+            await teacher.save();
+        }
+
+        res.status(200).send("Review deleted successfully");
+    } catch (error) {
+        console.error("Error deleting review:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+}
+
+
+
+// const updateReviewVote = async (req, res) => {
+//     const { reviewId, userId, voteType } = req.body;
+
+//     if (!reviewId || !userId || !voteType) {
+//         return res.status(400).send("Missing required fields");
+//     }
+
+//     try {
+//         const review = await TeacherRating.findById(reviewId);
+
+//         if (!review) {
+//             return res.status(404).send("Review not found");
+//         }
+
+//         const isUpvote = voteType === 'upvote';
+//         const voteField = isUpvote ? 'upvotes' : 'downvotes';
+//         const oppositeVoteField = isUpvote ? 'downvotes' : 'upvotes';
+
+
+//         review[oppositeVoteField] = review[oppositeVoteField].filter(voter => !voter.equals(userId));
+
+
+//         if (review[voteField].includes(userId)) {
+//             review[voteField] = review[voteField].filter(voter => !voter.equals(userId));
+//         } else {
+//             review[voteField].push(userId);
+//         }
+
+//         await review.save();
+//         const review2 = await TeacherRating.findById(reviewId);
+//         console.log("rEviw:", review)
+//         console.log("rEviw2:", review2)
+
+//         res.status(200).json({ upvotes: review2.upvotes.length, downvotes: review2.downvotes.length * (-1) });
+//     } catch (error) {
+//         console.error("Error updating vote:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// };
+
+
+
+
+// const deleteReview = async (req, res) => {
+//     const { teacherId, userId } = req.body;
+
+//     if (!teacherId || !userId) {
+//         return res.status(400).send("Missing required fields");
+//     }
+
+//     try {
+//         console.log("TeacherID: ", teacherId, "User: ", userId)
+
+//         const review = await TeacherRating.findOne({ teacherId, userId });
+
+//         if (!review) {
+//             return res.status(404).send("review not found");
+//         }
+
+//         console.log("review which has to be  deleted: ", review)
+
+//         const reviewId = await TeacherRating.findOneAndDelete({ teacherId, userId });
+
+//         console.log("review which is deleted: ", reviewId)
+
+//         const teacher = await Teacher.findById(teacherId);
+//         if (teacher) {
+//             const rating = teacher.rating;
+//             const totalCount = teacher.ratings.length;
+//             const newRating = ((rating * totalCount) - reviewId.rating) / (teacher.ratings.length - 1)
+
+//             console.log("new rating:", newRating, "plus,", totalCount, "and: ", rating)
+//             teacher.ratings = teacher.ratings.filter(rating => !rating.equals(reviewId._id));
+//             teacher.rating = newRating
+
+//             const datq = await teacher.save();
+//             console.log("Teachcer: ", datq)
+//         }
+
+
+//         res.status(200).send("Review deleted successfully");
+//     } catch (error) {
+//         console.error("Error deleting review:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// }
 
 
 
@@ -175,5 +360,7 @@ module.exports = {
     rateATeacher,
     getTeacherReviews,
     get_a_TeacherReviews,
-    teacherSpeficicInfo
+    teacherSpeficicInfo,
+    updateReviewVote,
+    deleteReview
 };
