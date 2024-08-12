@@ -36,17 +36,20 @@ app.use(morgan("dev"))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
+
+
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+    resave: process.env.RESAVE,
+    saveUninitialized: process.env.SAVE_UNINTIALIZED,
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
-        httpOnly: true,
+        httpOnly: process.env.HTTP_ONLY,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     },
-    rolling: true,
+    rolling: process.env.ROLLING,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_DB_URI,
         collectionName: 'sessions',

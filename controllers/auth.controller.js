@@ -212,23 +212,6 @@ const login = async (req, res) => {
             }
         }
 
-        // const token = generateToken(
-        //     {
-        //         _id: user._id,
-        //         name: user.name,
-        //         picture: user.profilePic,
-        //         email: is_user_uni ? user.universityEmail : user.personalEmail,
-        //         email_verified: is_user_uni ? user.universityEmailVerified : user.personalEmailVerified
-        //     },
-        //     res
-        // );
-        // const newTokenToUser = await User.findByIdAndUpdate(
-        //     { _id: user._id },
-        //     {
-        //         token: token,
-        //     }
-        // );
-
         const userIdSplit = user._id.toString().split("'")[0]
         console.log("SPLiyef id ", userIdSplit)
 
