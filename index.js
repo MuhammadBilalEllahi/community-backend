@@ -27,7 +27,7 @@ dotenv.config()
 //     console.error('Redis error:', err);
 // });
 
-app.use(session({
+const sessionData = session({
     secret: process.env.SESSION_SECRET,
     resave: process.env.RESAVE,
     saveUninitialized: process.env.SAVE_UNINTIALIZED,
@@ -45,7 +45,10 @@ app.use(session({
         collectionName: 'sessions',
         ttl: 14 * 24 * 60 * 60 // 14 days
     })
-}));
+})
+app.use(sessionData);
+
+
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
     credentials: true

@@ -224,6 +224,7 @@ const login = async (req, res) => {
 
         };
 
+        console.log("The session data is ", req.session)
         req.session.save((err) => {
             if (err) {
                 console.log('Session save error:', err);
@@ -232,6 +233,8 @@ const login = async (req, res) => {
             console.log("Session user in Longin Controller : ", req.session.user)
             return res.status(201).json(req.session.user);
         });
+
+
         // console.log("Session user in Longin Controller : ", req.session.user)
 
         // res.status(201).json(req.session.user);
@@ -247,6 +250,7 @@ const login = async (req, res) => {
 const session = async (req, res) => {
 
     console.log("Req user:", req.session.user)
+    console.log("The session data is in session ", req.session)
     if (req.session.user) {
         res.status(200).json({
             _id: req.session.user._id,
