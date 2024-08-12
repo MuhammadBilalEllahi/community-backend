@@ -2,7 +2,7 @@
 // const os = require('os');
 const express = require("express")
 const app = express()
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 80 || 8080
 const http = require('http');
 const socketIo = require('socket.io');
 const dotenv = require("dotenv")
@@ -28,15 +28,17 @@ dotenv.config()
 // });
 
 const sessionData = session({
+    name: "THECOOK",
     secret: process.env.SESSION_SECRET,
     resave: process.env.RESAVE,
     saveUninitialized: process.env.SAVE_UNINTIALIZED,
     credentials: true,
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        httpOnly: true,  // only use http:// or https://
+        secure: false,  // allow http:// (port 90) ("true" would need port 443 + SSL stuff)
+        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        sameSite: 'lax',  // use lax in both prod and dev
         domain: process.env.COOKIE_DOMAIN
     },
     rolling: process.env.ROLLING,
