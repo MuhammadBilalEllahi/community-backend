@@ -27,22 +27,11 @@ dotenv.config()
 //     console.error('Redis error:', err);
 // });
 
-app.use(cors({
-    origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
-    credentials: true
-}))
-app.use(cookieParser())
-app.use(morgan("dev"))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-
-
-
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: process.env.RESAVE,
     saveUninitialized: process.env.SAVE_UNINTIALIZED,
+    credentials: true,
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
         httpOnly: process.env.HTTP_ONLY,
@@ -56,6 +45,19 @@ app.use(session({
         ttl: 14 * 24 * 60 * 60 // 14 days
     })
 }));
+app.use(cors({
+    origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
+    credentials: true
+}))
+app.use(cookieParser())
+app.use(morgan("dev"))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+
+
+
+
 
 // const crypto = require('crypto')
 // console.log(crypto.randomBytes(6).toString('hex'))
