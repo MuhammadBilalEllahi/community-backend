@@ -3,11 +3,13 @@ const { signupR, updateInfoR, login, logout, session } = require("../controllers
 
 const router = express.Router()
 
+router.get('/session', session)
+
 
 router.post("/signup", signupR)
 router.post("/login", login)
 router.post("/logout", logout)
-router.post('/session', session)
+
 
 router.put("/registered/update-info", updateInfoR)
 
