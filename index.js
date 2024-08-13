@@ -26,7 +26,7 @@ dotenv.config()
 // redis.on('error', (err) => {
 //     console.error('Redis error:', err);
 // });
-
+app.set('trust proxy', 1);
 const sessionData = session({
     name: "THECOOK",
     secret: process.env.SESSION_SECRET || 'default_secret',
