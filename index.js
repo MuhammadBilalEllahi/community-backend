@@ -52,7 +52,8 @@ app.use(sessionData);
 
 app.use(cors({
     origin: ["http://localhost:3000", "https://comsian.vercel.app", "https://comsian.bilalellahi.com"],
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"]
 }))
 app.use(cookieParser())
 app.use(morgan("dev"))
