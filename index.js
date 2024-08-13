@@ -2,7 +2,7 @@
 // const os = require('os');
 const express = require("express")
 const app = express()
-const PORT = process.env.PORT || 80 || 8080
+const PORT = process.env.PORT || 8080
 const http = require('http');
 const socketIo = require('socket.io');
 const dotenv = require("dotenv")
@@ -29,25 +29,24 @@ dotenv.config()
 
 const sessionData = session({
     name: "THECOOK",
-    secret: process.env.SESSION_SECRET,
-    resave: process.env.RESAVE,
-    saveUninitialized: process.env.SAVE_UNINTIALIZED,
-    credentials: true,
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: process.env.RESAVE === 'true',
+    saveUninitialized: process.env.SAVE_UNINTIALIZED === 'true',
     cookie: {
         maxAge: 60 * 60 * 1000, // 1 hour
-        httpOnly: true,  // only use http:// or https://
-        secure: false,  // allow http:// (port 90) ("true" would need port 443 + SSL stuff)
-        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        sameSite: 'lax',  // use lax in both prod and dev
-        domain: process.env.COOKIE_DOMAIN
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // true if HTTPS in production
+        sameSite: process.env.NODE_ENV === 'production' && 'lax',
+        domain: process.env.COOKIE_DOMAIN || undefined
     },
-    rolling: process.env.ROLLING,
+    rolling: process.env.ROLLING === 'true',
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_DB_URI,
         collectionName: 'sessions',
         ttl: 14 * 24 * 60 * 60 // 14 days
     })
-})
+});
+
 app.use(sessionData);
 
 
