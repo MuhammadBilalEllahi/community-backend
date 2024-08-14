@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const TeacherRating = require("../models/rating.model");
-const Teacher = require("../models/teacher.model");
-const User = require("../models/user.model");
+const TeacherRating = require("../models/teacher/rating.model");
+const Teacher = require("../models/teacher/teacher.model");
+const User = require("../models/user/user.model");
 const UserVote = require("../models/voter/vote.model");
 
 const allTeachers = async (req, res) => {

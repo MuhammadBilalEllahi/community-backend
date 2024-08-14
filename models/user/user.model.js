@@ -60,6 +60,46 @@ const userSchema = new mongoose.Schema({
         default: false,
     },
 
+
+
+
+
+
+
+
+
+
+
+
+    karma: {
+        postKarma: { type: Number, default: 0 },
+        commentKarma: { type: Number, default: 0 }
+    },
+
+    profile: {
+        bio: { type: String, default: '' },
+        avatar: { type: String, default: '' },
+        location: { type: String, default: '' },
+        website: { type: String, default: '' }
+    },
+
+    savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+
+    subscribedCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     username: {
         type: String,
         unique: true

@@ -1,7 +1,7 @@
 
 
 const { OAuth2Client } = require('google-auth-library');
-const User = require('../models/user.model');
+const User = require('../models/user/user.model');
 const bcryptjs = require("bcryptjs");
 const { resendEmail } = require('./email.controller');
 

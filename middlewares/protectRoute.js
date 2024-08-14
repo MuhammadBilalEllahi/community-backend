@@ -1,5 +1,5 @@
 // const jwt = require("jsonwebtoken");
-const User = require("../models/user.model.js");
+const User = require("../models/user/user.model.js");
 
 
 const protectRoute = async (req, res, next) => { ///req res order is must

@@ -1,4 +1,4 @@
-const User = require("../models/user.model.js");
+const User = require("../models/user/user.model.js");
 const bcryptjs = require("bcryptjs");
 const generateToken = require("../utils/generate.token.js");
 const { resendEmail } = require("./email.controller.js");
@@ -168,7 +168,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        console.log(email, password)
+        // console.log(email, password)
 
         const userUniversity = await User.findOne({ universityEmail: email });
         const userPersonal = await User.findOne({ personalEmail: email });
@@ -201,19 +201,19 @@ const login = async (req, res) => {
         if (!user.google_EmailVerified) {
             if (is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    console.log("universityEmailVerified Not")
+                    // console.log("universityEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             } else if (!is_user_uni) {
                 if (!user.universityEmailVerified) {
-                    console.log("personalEmailVerified Not")
+                    // console.log("personalEmailVerified Not")
                     return res.status(400).json({ error: "User Not Verified, Check your mail" })
                 }
             }
         }
 
         const userIdSplit = user._id.toString().split("'")[0]
-        console.log("SPLiyef id ", userIdSplit)
+        // console.log("SPLiyef id ", userIdSplit)
 
         req.session.user = {
             _id: userIdSplit,
@@ -224,13 +224,13 @@ const login = async (req, res) => {
 
         };
 
-        console.log("The session data is ", req.session)
+        // console.log("The session data is ", req.session)
         req.session.save((err) => {
             if (err) {
                 console.log('Session save error:', err);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
-            console.log("Session user in Longin Controller : ", req.session.user)
+            // console.log("Session user in Longin Controller : ", req.session.user)
             return res.status(201).json(req.session.user);
         });
 
@@ -249,8 +249,8 @@ const login = async (req, res) => {
 
 const session = async (req, res) => {
 
-    console.log("Req user:", req.session.user)
-    console.log("The session data is in session ", req.session)
+    // console.log("Req user:", req.session.user)
+    // console.log("The session data is in session ", req.session)
     if (req.session.user) {
         res.status(200).json({
             _id: req.session.user._id,
@@ -352,7 +352,7 @@ const session = async (req, res) => {
 const logout = async (req, res) => {
     const token = req.session.user?.token
 
-    console.log("Log out", req.session.user)
+    // console.log("Log out", req.session.user)
     try {
 
         if (token) {

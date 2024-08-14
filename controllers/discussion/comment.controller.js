@@ -1,6 +1,6 @@
 const Comment = require("../../models/discussion/comment.model");
 const Discussion = require("../../models/discussion/discussion.model");
-const User = require("../../models/user.model");
+const User = require("../../models/user/user.model");
 
 const addCommentToDiscussion = async (req, res) => {
     const { toBeDiscussedId, userId, commentContent } = req.body
