@@ -85,6 +85,9 @@ const servePDFRouter = require('./routes/courseRoute/servePDF.route.js');
 const discussionRouter = require('./routes/discussion/discussion.route.js');
 const commentRouter = require('./routes/discussion/comment.route.js');
 
+const communityRouter = require('./routes/community/community.route.js');
+const communityTypeRouter = require('./routes/community/communityType.route.js');
+// const membersRouter = require('./routes/community/members.route.js');
 
 
 app.use("/api/auth", authRouter)
@@ -100,6 +103,22 @@ app.use("/api/pastpapers", protectRoute, servePDFRouter)
 
 app.use("/api/discussion", protectRoute, discussionRouter)
 app.use("/api/comment", protectRoute, commentRouter)
+
+
+
+app.use("/api/community", protectRoute, communityRouter)
+app.use("/api/communityType", protectRoute, communityTypeRouter)
+// app.use("/api/members", protectRoute, membersRouter)
+
+
+
+
+
+
+
+
+
+
 
 
 const startServer = () => {
