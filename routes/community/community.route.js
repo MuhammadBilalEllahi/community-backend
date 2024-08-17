@@ -3,6 +3,7 @@ const Community = require("../../models/communities/community.model");
 const Members = require("../../models/communities/members.model");
 const CommunityType = require("../../models/communities/communityType.model");
 const User = require("../../models/user/user.model");
+const PostsCollection = require("../../models/communities/postsCollection.model");
 const router = express.Router()
 
 
@@ -52,6 +53,13 @@ router.post("/create", async (req, res) => {
         community.members = members._id
         community.save()
 
+
+        const postCollection = await PostsCollection.create({ _id: community._id })
+        postCollection.save()
+
+        userFound.subscribedCommunities.push(community._id)
+        userFound.save()
+
         res.status(200).json({ message: "Community Created", community })
 
     } catch (error) {
@@ -93,6 +101,24 @@ router.get('/communities', async (req, res) => {
     }
 })
 
+router.get('/user-subscribed', async (req, res) => {
+    // const { userId } = req.body
+    const userId = req.session.user._id
+
+    try {
+
+
+        const subscribedCommunities = await User.findOne({ _id: userId }).select('subscribedCommunities').populate({ path: 'subscribedCommunities', select: 'name _id icon' })
+        console.log(subscribedCommunities)
+        if (!subscribedCommunities) return res.status(404).json({ error: "Error Fetching records" });
+        res.status(200).json(subscribedCommunities);
+
+    } catch (error) {
+        console.log("Error in already get community", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+})
+
 router.post('/community-data', async (req, res) => {
     const { communityName } = req.body;
     try {
@@ -113,6 +139,22 @@ router.post('/community-data', async (req, res) => {
     }
 })
 
+
+router.post('/posts', async (req, res) => {
+    const { communityId } = req.body;
+    // console.log("Community Id", communityId)
+    try {
+        const postFromCommunities = await PostsCollection.findById({ _id: communityId })
+        console.log("Community posts", postFromCommunities.posts)
+        if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
+        res.status(200).json(postFromCommunities.posts);
+
+    } catch (error) {
+
+        console.log("Error in  get posts from  community", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+})
 
 
 module.exports = router;

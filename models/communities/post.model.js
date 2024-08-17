@@ -1,25 +1,15 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
 const postSchema = new Schema({
-
     title: { type: String, required: true },
-    body: { type: String, required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
-    community: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Community",
-        required: true,
-    },
-
+    body: { type: String },
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    community: { type: Schema.Types.ObjectId, ref: "Community", required: true, index: true },
     createdAt: { type: Date, default: Date.now },
-
     upvotes: { type: Number, default: 0 },
-
     downvotes: { type: Number, default: 0 },
-
     commentsCount: { type: Number, default: 0 },
-
     media: {
         type: {
             type: String,
@@ -28,13 +18,11 @@ const postSchema = new Schema({
         },
         url: { type: String, default: "" },
     },
-
     flair: { type: String, default: "" },
-
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 
     editedAt: { type: Date },
-});
+}, { timestamps: true });
 
-const Post = mongoose.model("Post", postSchema);
+const Post = model("Post", postSchema);
 module.exports = Post;

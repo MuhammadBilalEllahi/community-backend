@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 const commentSchema = new Schema({
     postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },

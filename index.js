@@ -87,6 +87,7 @@ const commentRouter = require('./routes/discussion/comment.route.js');
 
 const communityRouter = require('./routes/community/community.route.js');
 const communityTypeRouter = require('./routes/community/communityType.route.js');
+const postRouter = require('./routes/community/post.route.js');
 // const membersRouter = require('./routes/community/members.route.js');
 
 
@@ -108,6 +109,7 @@ app.use("/api/comment", protectRoute, commentRouter)
 
 app.use("/api/community", protectRoute, communityRouter)
 app.use("/api/communityType", protectRoute, communityTypeRouter)
+app.use("/api/post", protectRoute, postRouter)
 // app.use("/api/members", protectRoute, membersRouter)
 
 

@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const { Schema, model } = mongoose;
+
 
 const communitySchema = new Schema({
     name: {
         type: String,
         required: true,
         unique: true,
-        lowercase: true
+        lowercase: true,
+        trim: true,
     },
     description: {
         type: String,
@@ -17,12 +19,12 @@ const communitySchema = new Schema({
         default: Date.now
     },
     creator: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
     moderators: [{
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User"
     }],
     rules: [
@@ -35,7 +37,7 @@ const communitySchema = new Schema({
     icon: { type: String },
     topics: [{ type: String }],
     communityType: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'CommunityType',
         required: true
     },
@@ -44,10 +46,13 @@ const communitySchema = new Schema({
         default: 0
     },
     members: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Members',
         // required: true
-    }
+    },
+    postsCollectionRef: {
+        type: Schema.Types.ObjectId, ref: "PostsCollection"
+    },
 });
 
 const Community = mongoose.model("Community", communitySchema);
