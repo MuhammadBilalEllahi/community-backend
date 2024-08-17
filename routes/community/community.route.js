@@ -6,7 +6,7 @@ const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const router = express.Router()
 
-
+//create a community from frontend
 router.post("/create", async (req, res) => {
     const { communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
@@ -68,6 +68,8 @@ router.post("/create", async (req, res) => {
     }
 });
 
+
+// checks if community name already exists while creating community
 router.get('/has-this-community', async (req, res) => {
     const { communityName } = req.query;
     try {
@@ -85,7 +87,7 @@ router.get('/has-this-community', async (req, res) => {
 })
 
 
-
+//fecthes communities for sidebar
 router.get('/communities', async (req, res) => {
 
     try {
@@ -101,6 +103,7 @@ router.get('/communities', async (req, res) => {
     }
 })
 
+//this get func, checks subscribed communities of user to post new content on any community
 router.get('/user-subscribed', async (req, res) => {
     // const { userId } = req.body
     const userId = req.session.user._id
@@ -119,6 +122,7 @@ router.get('/user-subscribed', async (req, res) => {
     }
 })
 
+//returns community data and their mod info
 router.post('/community-data', async (req, res) => {
     const { communityName } = req.body;
     try {
@@ -139,7 +143,7 @@ router.post('/community-data', async (req, res) => {
     }
 })
 
-
+// returns post of that community whose id is given in request body
 router.post('/posts', async (req, res) => {
     const { communityId } = req.body;
     // console.log("Community Id", communityId)
@@ -156,5 +160,122 @@ router.post('/posts', async (req, res) => {
     }
 })
 
+
+//checking if user is joined to community or not
+router.get('/is-user-joined', async (req, res) => {
+    const { communityId } = req.query;
+    const userId = req.session.user._id;
+
+    try {
+        const userSubscribtions = await User.findOne({ _id: userId }).select('subscribedCommunities -_id').populate({ path: 'subscribedCommunities', select: '_id' })
+        console.log(userSubscribtions)
+        if (!userSubscribtions) return res.status(404).json({ error: "Error Fetching records" });
+
+        const isSubscribed = userSubscribtions.subscribedCommunities.some(
+            community => community._id.toString() === communityId
+        );
+
+        res.status(200).json({ message: isSubscribed })
+
+    } catch (error) {
+        console.error("Error in already get community", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+})
+
+
+
+//checking if user is "joined then leave", or "join if not joined" to community 
+router.post('/join-or-leave', async (req, res) => {
+    const { communityId } = req.query;
+    const userId = req.session.user._id;
+
+    try {
+        const user = await User.findById(userId).select('subscribedCommunities');
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const community = await Community.findById(communityId).populate('members');
+        if (!community) return res.status(404).json({ error: "Community not found" });
+
+        const isSubscribed = user.subscribedCommunities.some(
+            community => community.toString() === communityId
+        );
+
+        if (isSubscribed) {
+            // remove user from subscribedCommunities and community's members list
+            user.subscribedCommunities = user.subscribedCommunities.filter(
+                community => community.toString() !== communityId
+            );
+            community.members.members = community.members.members.filter(
+                member => member.toString() !== userId
+            );
+            community.totalMembers = Math.max(0, community.totalMembers - 1);
+        } else {
+            // ad user to subscribedCommunities and community's members list
+            user.subscribedCommunities.push(communityId);
+            community.members.members.push(userId);
+            community.totalMembers += 1;
+        }
+
+        // save the updated documents
+        await user.save();
+        await community.members.save();
+        await community.save();
+
+        res.status(200).json({ message: isSubscribed ? false : true });
+        // res.status(200).json({ message: isSubscribed ? 'Left the community' : 'Joined the community' });
+
+    } catch (error) {
+        console.error("Error in join-or-leave operation", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+// router.post('/join-or-leave', async (req, res) => {
+//     const { communityId } = req.query;
+//     const userId = req.session.user._id;
+
+//     try {
+//         const userSubscribtions = await User.findOne({ _id: userId }).select('subscribedCommunities -_id').populate({ path: 'subscribedCommunities', select: '_id' })
+//         console.log(userSubscribtions)
+//         if (!userSubscribtions) return res.status(404).json({ error: "Error Fetching records" });
+
+
+
+//         let isSubscribed = userSubscribtions.subscribedCommunities.some(
+//             community => community._id.toString() === communityId
+//         );
+
+
+//         if (isSubscribed) {
+//             userSubscribtions.subscribedCommunities.pop(communityId)
+
+//             const community = await Community.findById({ _id: communityId })
+//             if (!community.members._id) return;
+
+//             const communityMember = await Members.findById({ _id: community.members._id })
+//             communityMember.members.pop(userId)
+//             community.totalMembers === 0 ? community.totalMembers = 0 : community.totalMembers -= 1
+//             communityMember.save()
+//         } else {
+//             userSubscribtions.subscribedCommunities.push(communityId)
+
+//             const community = await Community.findById({ _id: communityId })
+//             if (!community.members._id) return;
+
+//             const communityMember = await Members.findById({ _id: community.members._id })
+//             communityMember.members.push(userId)
+//             community.totalMembers += 1
+//             communityMember.save()
+//         }
+
+//         res.status(200).json({ message: isSubscribed })
+
+//     } catch (error) {
+//         console.error("Error in already get community", error.message)
+//         res.status(500).json({ error: "Internal Server Error" })
+//     }
+// })
 
 module.exports = router;
