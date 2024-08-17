@@ -151,7 +151,11 @@ router.post('/posts', async (req, res) => {
         const postFromCommunities = await PostsCollection.findById({ _id: communityId })
         // console.log("Community posts", postFromCommunities.posts)
         if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
-        res.status(200).json(postFromCommunities.posts);
+
+        // const sortedPosts = postFromCommunities.posts.sort((a, b) => b.createdAt - a.createdAt); // old first
+        const sortedPosts = postFromCommunities.posts.sort((b, a) => b.createdAt - a.createdAt); //latest first
+
+        res.status(200).json(sortedPosts);
 
     } catch (error) {
 

@@ -10,6 +10,10 @@ const postsCollectionSchema = new Schema({
     },
     posts: [{
         postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
+        author: {
+            type: String,
+            // required: true //let this not required now cuz data is fed without it
+        },
         title: { type: String, required: true },  // Denormalized title
         snippet: { type: String },  // Denormalized body snippet or media URL, put any media here if needed
         createdAt: { type: Date, default: Date.now },  // Denormalized field
