@@ -11,13 +11,13 @@ router.post("/create", async (req, res) => {
     const { communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
     try {
-        console.log("communityName", communityName, "\n",
-            "description", description, "\n",
-            "banner", banner, "\n",
-            "icon", icon, "\n",
-            "topics", topics,
-            "\n", "communityType", communityType,
-            "\n", "creator", creatorId)
+        // console.log("communityName", communityName, "\n",
+        //     "description", description, "\n",
+        //     "banner", banner, "\n",
+        //     "icon", icon, "\n",
+        //     "topics", topics,
+        //     "\n", "communityType", communityType,
+        //     "\n", "creator", creatorId)
 
 
         const communityNameLowercased = communityName.toString().toLowerCase()
@@ -63,7 +63,7 @@ router.post("/create", async (req, res) => {
         res.status(200).json({ message: "Community Created", community })
 
     } catch (error) {
-        console.log("Error while creating community", error.message)
+        console.error("Error while creating community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 });
@@ -79,7 +79,7 @@ router.get('/has-this-community', async (req, res) => {
         res.status(200).json({ exists: false });
 
     } catch (error) {
-        console.log("Error in already created community", error.message)
+        console.error("Error in already created community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })
@@ -96,7 +96,7 @@ router.get('/communities', async (req, res) => {
         res.status(200).json(communities);
 
     } catch (error) {
-        console.log("Error in already get community", error.message)
+        console.error("Error in already get community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })
@@ -109,12 +109,12 @@ router.get('/user-subscribed', async (req, res) => {
 
 
         const subscribedCommunities = await User.findOne({ _id: userId }).select('subscribedCommunities').populate({ path: 'subscribedCommunities', select: 'name _id icon' })
-        console.log(subscribedCommunities)
+        // console.log(subscribedCommunities)
         if (!subscribedCommunities) return res.status(404).json({ error: "Error Fetching records" });
         res.status(200).json(subscribedCommunities);
 
     } catch (error) {
-        console.log("Error in already get community", error.message)
+        console.error("Error in already get community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })
@@ -134,7 +134,7 @@ router.post('/community-data', async (req, res) => {
         res.status(200).json(community);
 
     } catch (error) {
-        console.log("Error in already get community", error.message)
+        console.error("Error in already get community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })
@@ -145,13 +145,13 @@ router.post('/posts', async (req, res) => {
     // console.log("Community Id", communityId)
     try {
         const postFromCommunities = await PostsCollection.findById({ _id: communityId })
-        console.log("Community posts", postFromCommunities.posts)
+        // console.log("Community posts", postFromCommunities.posts)
         if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
         res.status(200).json(postFromCommunities.posts);
 
     } catch (error) {
 
-        console.log("Error in  get posts from  community", error.message)
+        console.error("Error in  get posts from  community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })

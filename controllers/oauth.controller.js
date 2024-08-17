@@ -11,7 +11,7 @@ async function getUserData(access_token, user, req, res) {
     // console.log("Access Token", access_token)
     // console.log('response', response);
     const data = await response.json();
-    console.log('data', data);
+    // console.log('data', data);
     //  console.log('data', data.email, data.email_verified);
 
     const universityEmail_UserDB = await User.findOne({ universityEmail: data.email });
@@ -93,7 +93,7 @@ async function getUserData(access_token, user, req, res) {
                     console.log('Session save error:', err);
 
                 }
-                console.log("Session user in Longin Controller : ", req.session.user)
+                // console.log("Session user in Longin Controller : ", req.session.user)
 
             });
 
@@ -154,7 +154,7 @@ async function getUserData(access_token, user, req, res) {
                     console.log('Session save error:', err);
 
                 }
-                console.log("Session user in Longin Controller : ", req.session.user)
+                // console.log("Session user in Longin Controller : ", req.session.user)
 
             });
 

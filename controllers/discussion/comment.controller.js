@@ -5,7 +5,7 @@ const User = require("../../models/user/user.model");
 const addCommentToDiscussion = async (req, res) => {
     const { toBeDiscussedId, userId, commentContent } = req.body
 
-    console.log(" toBeDiscussedId, userId, commentContent: ", toBeDiscussedId, userId, commentContent)
+    // console.log(" toBeDiscussedId, userId, commentContent: ", toBeDiscussedId, userId, commentContent)
 
     try {
         const user = await User.findById(userId);

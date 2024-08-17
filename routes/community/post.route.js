@@ -34,7 +34,7 @@ router.post("/create", async (req, res) => {
         addToPostsCollection.save()
         res.status(200).json({ message: "Post created" })
     } catch (error) {
-        console.log("Error in creating post", error.message)
+        console.error("Error in creating post", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 

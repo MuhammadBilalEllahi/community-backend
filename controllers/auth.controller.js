@@ -58,7 +58,7 @@ const signupR = async (req, res) => {
             res.status(400).json({ error: "Invalid User Data" });
         }
     } catch (error) {
-        console.log("Error in- signup-registered-student-controller: ", error.message);
+        console.error("Error in- signup-registered-student-controller: ", error.message);
         res.status(500).json({ error: "Internal Server Error" });
         // throw new Error("Error in- signup-controller: ", error)
     }
@@ -239,7 +239,7 @@ const login = async (req, res) => {
 
         // res.status(201).json(req.session.user);
     } catch (error) {
-        console.log("Error in- login-controller: ", error.message)
+        console.error("Error in- login-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" });
         // throw new Error("Error in- login-controller: ", error)
     }
@@ -445,7 +445,7 @@ const logout = async (req, res) => {
 
 
     } catch (error) {
-        // console.log("Error in- logout-controller: ", error.message)
+        // console.error("Error in- logout-controller: ", error.message)
         res.status(500).json({ error: "Internal Server Error" });
         // throw new Error("Error in- logout-controller: ", error)
     }
