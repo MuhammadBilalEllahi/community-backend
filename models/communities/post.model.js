@@ -19,7 +19,7 @@ const postSchema = new Schema({
         url: { type: String, default: "" },
     },
     flair: { type: String, default: "" },
-    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+    comments: { type: Schema.Types.ObjectId, ref: "PostCommentCollection" },
 
     editedAt: { type: Date },
 }, { timestamps: true });

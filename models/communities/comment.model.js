@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const commentSchema = new Schema({
+const postCommentSchema = new Schema({
     postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     body: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
     upvotes: { type: Number, default: 0 },
     downvotes: { type: Number, default: 0 },
-    parentComment: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' },  // For nested comments
-    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    parentComment: { type: mongoose.Schema.Types.ObjectId, ref: 'PostComment' },  // For nested comments
+    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PostComment' }],
     editedAt: { type: Date }
 });
 
-const Comment = mongoose.model('Comment', commentSchema);
-module.exports = Comment;
+const PostComment = mongoose.model('PostComment', postCommentSchema);
+module.exports = PostComment;

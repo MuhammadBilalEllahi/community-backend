@@ -150,12 +150,14 @@ router.post('/posts', async (req, res) => {
     const { communityId } = req.body;
     // console.log("Community Id", communityId)
     try {
-        const postFromCommunities = await PostsCollection.findById({ _id: communityId })
-        // console.log("Community posts", postFromCommunities.posts)
+        const postFromCommunities = await PostsCollection.findById({ _id: communityId }).select("posts").populate({ path: "posts.postId", select: "upvotes downvotes commentsCount" })
+        console.log("Community posts", postFromCommunities)
         if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
 
-        // const sortedPosts = postFromCommunities.posts.sort((a, b) => b.createdAt - a.createdAt); // old first
-        const sortedPosts = postFromCommunities.posts.sort((b, a) => b.createdAt - a.createdAt); //latest first
+        // const sortedPosts = postFromCommunities.posts.sort((a, b) => (new Date(a.createdAt) - new Date(b.createdAt))); // old first 
+        const sortedPosts = postFromCommunities.posts.sort((a, b) => (new Date(b.createdAt) - new Date(a.createdAt))); //latest first
+        console.log("Community posts", sortedPosts)
+
 
         res.status(200).json(sortedPosts);
 
@@ -174,7 +176,7 @@ router.get('/is-user-joined', async (req, res) => {
 
     try {
         const userSubscribtions = await User.findOne({ _id: userId }).select('subscribedCommunities -_id').populate({ path: 'subscribedCommunities', select: '_id' })
-        console.log(userSubscribtions)
+        // console.log(userSubscribtions)
         if (!userSubscribtions) return res.status(404).json({ error: "Error Fetching records" });
 
         const isSubscribed = userSubscribtions.subscribedCommunities.some(

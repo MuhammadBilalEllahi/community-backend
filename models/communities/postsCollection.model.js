@@ -12,7 +12,7 @@ const postsCollectionSchema = new Schema({
         postId: { type: Schema.Types.ObjectId, ref: "Post", required: true },
         author: {
             type: String,
-            // required: true //let this not required now cuz data is fed without it
+            required: true
         },
         title: { type: String, required: true },  // Denormalized title
         snippet: { type: String },  // Denormalized body snippet or media URL, put any media here if needed
