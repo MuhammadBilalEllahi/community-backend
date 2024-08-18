@@ -60,7 +60,9 @@ router.post("/create", async (req, res) => {
         userFound.subscribedCommunities.push(community._id)
         userFound.save()
 
-        res.status(200).json({ message: "Community Created", community })
+
+        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${community.name}` })
+
 
     } catch (error) {
         console.error("Error while creating community", error.message)

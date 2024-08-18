@@ -2,12 +2,16 @@ const express = require("express");
 const Post = require("../../models/communities/post.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const User = require("../../models/user/user.model");
+const Community = require("../../models/communities/community.model");
 const router = express.Router()
 
 //get latest post in community (unshift )
 router.post("/create", async (req, res) => {
     const { title, body, communityId, author } = req.body;
     try {
+        const communityExists = await Community.findById({ _id: communityId })
+        if (!communityExists) return res.status(404).json({ error: "Error Occured Finding this Community" })
+
         const user = await User.findById({ _id: author })
         if (!user) return res.status(404).json({ error: "Error Occured, Are you signed In?" })
 
@@ -36,7 +40,7 @@ router.post("/create", async (req, res) => {
         })
 
         addToPostsCollection.save()
-        res.status(200).json({ message: "Post created" })
+        res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}` })
     } catch (error) {
         console.error("Error in creating post", error.message)
         res.status(500).json({ error: "Internal Server Error" })
