@@ -33,7 +33,7 @@ async function getUserData(access_token, user, req, res) {
         const emailDomain = data.email.split("@")[1]
 
 
-        const username = generateUsernameFromEmail(beforeDomain)
+        const username = await generateUsernameFromEmail(beforeDomain)
 
         const isUniversityMail = emailDomain === "cuilahore.edu.pk" || emailDomain === "cuiislamabad.edu.pk";
         const universityEmailExpirationDate = getExpirationDate(isUniversityMail, beforeDomain)
@@ -118,7 +118,7 @@ async function getUserData(access_token, user, req, res) {
                 const beforeDomain = data.email.split("@")[0];
                 const universityEmailExpirationDate = getExpirationDate(true, beforeDomain)
 
-                const username = generateUsernameFromEmail(beforeDomain)
+                const username = await generateUsernameFromEmail(beforeDomain)
 
                 response = await User.findOneAndUpdate({ universityEmail: mail }, {
                     name: isVerified.name ? isVerified.name : data.name,
@@ -178,7 +178,7 @@ async function getUserData(access_token, user, req, res) {
                 }, { new: true, select: "-password" })
             } else {
                 const beforeDomain = data.email.split("@")[0];
-                const username = generateUsernameFromEmail(beforeDomain)
+                const username = await generateUsernameFromEmail(beforeDomain)
 
                 response = await User.findOneAndUpdate({ personalEmail: mail }, {
                     name: isVerified.name ? isVerified.name : data.name,
@@ -223,14 +223,30 @@ async function getUserData(access_token, user, req, res) {
 
 }
 
-const generateUsernameFromEmail = (emailPart) => {
+// const generateUsernameFromEmail = (emailPart) => {
+
+//     const cleanedEmailPart = emailPart.replace(/[^a-zA-Z0-9]/g, '');
+//     const uniqueSuffix = Date.now().toString().slice(-4);
+//     const username = `${cleanedEmailPart}_${uniqueSuffix}`;
+
+//     return username;
+// };
+
+const generateUsernameFromEmail = async (emailPart) => {
 
     const cleanedEmailPart = emailPart.replace(/[^a-zA-Z0-9]/g, '');
     const uniqueSuffix = Date.now().toString().slice(-4);
     const username = `${cleanedEmailPart}_${uniqueSuffix}`;
 
-    return username;
+    const userNameAlreadyCreated = await User.findOne({ username: username });
+    console.log(userNameAlreadyCreated)
+    if (!userNameAlreadyCreated) return username;
+
+    generateUsernameFromEmail(emailPart)
 };
+
+
+
 
 function getExpirationDate(isUniversityMail, beforeDomain) {
     if (!isUniversityMail) {

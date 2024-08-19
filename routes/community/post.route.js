@@ -3,8 +3,9 @@ const Post = require("../../models/communities/post.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const User = require("../../models/user/user.model");
 const Community = require("../../models/communities/community.model");
-const PostComment = require("../../models/communities/comment.model");
+const PostComment = require("../../models/communities/postComment.model");
 const PostCommentCollection = require("../../models/communities/commentCollection");
+const CommunityPostAndCommentVote = require("../../models/communities/CommunityPostAndCommentVote.model");
 const router = express.Router()
 
 
@@ -38,6 +39,14 @@ router.get("/details/comments", async (req, res) => {
                 populate: {
                     path: 'author',
                     select: 'name profilePic personalEmailVerified universityEmailVerified personalEmail universityEmail'
+                }
+            })
+            .populate({
+                path: "comments",
+
+                populate: {
+                    path: 'vote',
+                    select: 'upVotesCount downVotesCount upvotes downvotes',
                 }
             })
         //.populate('comments.author')
@@ -144,7 +153,25 @@ router.post("/create-comment", async (req, res) => {
         post.commentsCount += 1;
         await post.save();
 
-        res.status(200).json({ message: "Comment added successfully", comment: newComment });
+
+        const voteCollection_create = await CommunityPostAndCommentVote.create({
+            commentId: newComment._id
+        })
+
+        voteCollection_create.save()
+
+
+        const newCommentCreated = await PostComment.findById({ _id: newComment._id })
+        newCommentCreated.vote = voteCollection_create._id
+
+        newCommentCreated.save()
+
+        await newCommentCreated.populate({
+            path: 'vote',
+            populate: 'upVotesCount downVotesCount upvotes downvotes',
+        })
+        // console.log(newCommentCreated)
+        res.status(200).json({ message: "Comment added successfully", comment: newCommentCreated });
     } catch (error) {
         console.error("Error adding comment", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -177,7 +204,28 @@ router.post("/reply-comment", async (req, res) => {
         postComment.replies.push(newComment._id)
         await postComment.save();
 
-        res.status(200).json({ message: "Reply added successfully", comment: newComment });
+
+
+        const voteCollection_create = await CommunityPostAndCommentVote.create({
+            commentId: newComment._id
+        })
+
+        voteCollection_create.save()
+
+
+        const newCommentCreated = await PostComment.findById({ _id: newComment._id })
+        newCommentCreated.vote = voteCollection_create._id
+
+        newCommentCreated.save()
+
+        await newCommentCreated.populate({
+            path: 'vote',
+            populate: 'upvotes downvotes upVotesCount downVotesCount',
+
+        })
+
+        // console.log(newCommentCreated)
+        res.status(200).json({ message: "Reply added successfully", comment: newCommentCreated });
     } catch (error) {
         console.error("Error adding comment", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -197,17 +245,28 @@ router.post("/get-replies", async (req, res) => {
 
     try {
 
-        const postComment = await PostComment.findById({ _id: commentId }).populate(
-            {
+        const postComment = await PostComment.findById({ _id: commentId })
+            .populate({
                 path: "replies",
+
                 populate: {
-                    path: "author",
-                    select: 'name profilePic universityEmailVerified personalEmailVerified personalEmail universityEmail'
-                },
-            }
-        );
+                    path: 'vote',
+                    select: 'upVotesCount downVotesCount upvotes downvotes',
+                }
+            })
+            .populate(
+                {
+                    path: "replies",
+                    populate: {
+                        path: "author",
+                        select: 'name profilePic universityEmailVerified personalEmailVerified personalEmail universityEmail'
+                    },
+
+                }
+            ).exec()
+
         if (!postComment) return res.status(404).json({ error: "Post not found" });
-        console.log(postComment.replies)
+        // console.log(postComment.replies)
 
 
         // const replies = postComment.replies.
@@ -220,6 +279,62 @@ router.post("/get-replies", async (req, res) => {
     }
 });
 
+
+
+//for commetns , can be used for post by modifcation. do comment rn
+router.post("/vote", async (req, res) => {
+    const { commentId, voteType } = req.body;
+
+    try {
+        const userId = req.session.user;
+
+        const checkVoteInPostComment = await PostComment.findById({ _id: commentId })
+        if (!checkVoteInPostComment) return res.status(404).json({ error: "Post Comment not found" });
+        // console.log(checkVoteInPostComment)
+
+
+
+        const checkVoteInPostComment_VoteCollection = await CommunityPostAndCommentVote.findOne({ commentId: commentId })
+        if (!checkVoteInPostComment_VoteCollection) return res.status(404).json({ error: "Post Comment Vote not found" });
+        // console.log(checkVoteInPostComment_VoteCollection)
+
+        if (voteType === 'upvote') {
+            checkVoteInPostComment_VoteCollection.upvotes.includes(userId._id) ?
+                checkVoteInPostComment_VoteCollection.upvotes.pop(userId._id) :
+                checkVoteInPostComment_VoteCollection.upvotes.push(userId._id)
+
+            checkVoteInPostComment_VoteCollection.downvotes.includes(userId._id) &&
+                checkVoteInPostComment_VoteCollection.downvotes.pop(userId._id)
+
+        } else if (voteType === 'downvote') {
+
+            checkVoteInPostComment_VoteCollection.downvotes.includes(userId._id) ?
+                checkVoteInPostComment_VoteCollection.downvotes.pop(userId._id) :
+                checkVoteInPostComment_VoteCollection.downvotes.push(userId._id)
+
+
+            checkVoteInPostComment_VoteCollection.upvotes.includes(userId._id) &&
+                checkVoteInPostComment_VoteCollection.upvotes.pop(userId._id)
+
+
+
+        }
+
+        checkVoteInPostComment_VoteCollection.upVotesCount = checkVoteInPostComment_VoteCollection.upvotes.length
+        checkVoteInPostComment_VoteCollection.downVotesCount = checkVoteInPostComment_VoteCollection.downvotes.length
+
+        checkVoteInPostComment_VoteCollection.save()
+        const upVotesCount = checkVoteInPostComment_VoteCollection.upvotes.length
+        const downVotesCount = checkVoteInPostComment_VoteCollection.downvotes.length
+
+
+        // console.log("te->", checkVoteInPostComment_VoteCollection)
+        res.status(200).json({ message: "Voted", upVotesCount, downVotesCount });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 
 module.exports = router;

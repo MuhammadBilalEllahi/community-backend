@@ -6,8 +6,9 @@ const postCommentSchema = new Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     body: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
-    upvotes: { type: Number, default: 0 },
-    downvotes: { type: Number, default: 0 },
+    // upvotes: { type: Number, default: 0 },
+    // downvotes: { type: Number, default: 0 },
+    vote: { type: mongoose.Schema.Types.ObjectId, ref: "CommunityPostAndCommentVote" },
     parentComment: { type: mongoose.Schema.Types.ObjectId, ref: 'PostComment' },  // For nested comments
     replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PostComment' }],
     editedAt: { type: Date }

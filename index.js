@@ -88,6 +88,7 @@ const commentRouter = require('./routes/discussion/comment.route.js');
 const communityRouter = require('./routes/community/community.route.js');
 const communityTypeRouter = require('./routes/community/communityType.route.js');
 const postRouter = require('./routes/community/post.route.js');
+const User = require("./models/user/user.model.js");
 // const membersRouter = require('./routes/community/members.route.js');
 
 
