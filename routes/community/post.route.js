@@ -32,10 +32,15 @@ router.get("/details/comments", async (req, res) => {
     const { postId } = req.query;
     try {
 
-        const commentDetails = await PostCommentCollection.findById({ _id: postId }).populate({
-            path: 'comments',
-            select: 'comments'
-        })
+        const commentDetails = await PostCommentCollection.findById({ _id: postId })
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'name profilePic personalEmailVerified universityEmailVerified personalEmail universityEmail'
+                }
+            })
+        //.populate('comments.author')
         // console.log(commentDetails)
         res.status(200).json(commentDetails)
 
@@ -108,4 +113,113 @@ router.post("/create", async (req, res) => {
 
 
 })
+
+
+
+// Create a comment for a post
+router.post("/create-comment", async (req, res) => {
+    const { postId, author, body } = req.body;
+
+    try {
+
+        const post = await Post.findById(postId);
+        if (!post) return res.status(404).json({ error: "Post not found" });
+
+
+        const newComment = new PostComment({
+            postId,
+            author,
+            body
+        });
+
+
+        await newComment.save();
+
+
+        const postCommentCollection = await PostCommentCollection.findById(post.comments);
+        postCommentCollection.comments.push(newComment._id);
+        await postCommentCollection.save();
+
+
+        post.commentsCount += 1;
+        await post.save();
+
+        res.status(200).json({ message: "Comment added successfully", comment: newComment });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
+
+
+// Create reply on a comment for a post
+router.post("/reply-comment", async (req, res) => {
+    const { postId, commentId, author, body } = req.body;
+
+    try {
+
+        const postComment = await PostComment.findById({ _id: commentId });
+        if (!postComment) return res.status(404).json({ error: "Post not found" });
+
+
+        const newComment = new PostComment({
+            postId,
+            parentComment: commentId,
+            author,
+            body
+        });
+        await newComment.save();
+
+        postComment.replies.push(newComment._id)
+        await postComment.save();
+
+        res.status(200).json({ message: "Reply added successfully", comment: newComment });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
+
+
+
+
+
+router.post("/get-replies", async (req, res) => {
+    const { commentId } = req.body;
+
+    try {
+
+        const postComment = await PostComment.findById({ _id: commentId }).populate(
+            {
+                path: "replies",
+                populate: {
+                    path: "author",
+                    select: 'name profilePic universityEmailVerified personalEmailVerified personalEmail universityEmail'
+                },
+            }
+        );
+        if (!postComment) return res.status(404).json({ error: "Post not found" });
+        console.log(postComment.replies)
+
+
+        // const replies = postComment.replies.
+
+
+        res.status(200).json({ message: "Reply added successfully", comment: postComment.replies });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
 module.exports = router;
