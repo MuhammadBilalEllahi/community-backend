@@ -114,6 +114,24 @@ router.post("/create", async (req, res) => {
         )
         // console.log("updatePostToAddCommentId", updatePostToAddCommentId)
 
+
+
+
+        const voteCollection_create = await CommunityPostAndCommentVote.create({
+            postId: createPost._id
+        })
+
+        voteCollection_create.save()
+
+
+        const add_VoteCollection_ToPost = await Post.findById({ _id: createPost._id })
+        add_VoteCollection_ToPost.vote = voteCollection_create._id
+
+        add_VoteCollection_ToPost.save()
+
+
+
+
         res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}` })
     } catch (error) {
         console.error("Error in creating post", error.message)
@@ -335,6 +353,111 @@ router.post("/vote", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+
+
+// could be one code but better keep it different, vote post
+router.post("/vote-post", async (req, res) => {
+    const { postId, voteType } = req.body;
+
+    try {
+        const userId = req.session.user;
+
+        const checkVoteInPost = await Post.findById({ _id: postId })
+        if (!checkVoteInPost) return res.status(404).json({ error: "Post not found" });
+        console.log("Post ", checkVoteInPost)
+
+
+
+        const checkVoteInPost_VoteCollection = await CommunityPostAndCommentVote.findById({ _id: checkVoteInPost.vote._id })
+        if (!checkVoteInPost_VoteCollection) return res.status(404).json({ error: "Post Vote not found" });
+        console.log("Post Collecyion", checkVoteInPost_VoteCollection)
+
+        if (voteType === 'upvote') {
+            checkVoteInPost_VoteCollection.upvotes.includes(userId._id) ?
+                checkVoteInPost_VoteCollection.upvotes.pop(userId._id) :
+                checkVoteInPost_VoteCollection.upvotes.push(userId._id)
+
+            checkVoteInPost_VoteCollection.downvotes.includes(userId._id) &&
+                checkVoteInPost_VoteCollection.downvotes.pop(userId._id)
+
+        } else if (voteType === 'downvote') {
+
+            checkVoteInPost_VoteCollection.downvotes.includes(userId._id) ?
+                checkVoteInPost_VoteCollection.downvotes.pop(userId._id) :
+                checkVoteInPost_VoteCollection.downvotes.push(userId._id)
+
+
+            checkVoteInPost_VoteCollection.upvotes.includes(userId._id) &&
+                checkVoteInPost_VoteCollection.upvotes.pop(userId._id)
+
+
+
+        }
+
+        const up_vote = checkVoteInPost_VoteCollection.upvotes.length
+        const down_vote = checkVoteInPost_VoteCollection.downvotes.length
+
+        checkVoteInPost_VoteCollection.upVotesCount = up_vote;
+        checkVoteInPost_VoteCollection.downVotesCount = down_vote;
+
+        checkVoteInPost_VoteCollection.save()
+        checkVoteInPost.downvotes = down_vote;
+        checkVoteInPost.upvotes = up_vote;
+
+        checkVoteInPost.save()
+        const upVotesCount = checkVoteInPost_VoteCollection.upvotes.length
+        const downVotesCount = checkVoteInPost_VoteCollection.downvotes.length
+
+
+        // console.log("te->", checkVoteInPostComment_VoteCollection)
+        res.status(200).json({ message: "Voted", upVotesCount, downVotesCount });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
+
+
+router.post("/get-post-votes", async (req, res) => {
+    const { postId } = req.body;
+    console.log(postId)
+    try {
+        const userId = req.session.user;
+
+        const checkVoteInPost = await Post.findById({ _id: postId })
+        if (!checkVoteInPost) return res.status(404).json({ error: "Post not found" });
+        console.log("Post ", checkVoteInPost)
+
+
+
+        const checkVoteInPost_VoteCollection = await CommunityPostAndCommentVote.findById({ _id: checkVoteInPost.vote._id })
+        if (!checkVoteInPost_VoteCollection) return res.status(404).json({ error: "Post Vote not found" });
+        console.log("Post Collecyion", checkVoteInPost_VoteCollection)
+
+        let hasUpVoted = false;
+        let hasDownVoted = false;
+        if (checkVoteInPost_VoteCollection.upvotes.includes(userId._id)) {
+            hasUpVoted = true
+            hasDownVoted = false
+
+        } else if (checkVoteInPost_VoteCollection.downvotes.includes(userId._id)) {
+            hasUpVoted = false
+            hasDownVoted = true
+        }
+
+
+        res.status(200).json({ message: "fetched", hasUpVoted, hasDownVoted });
+    } catch (error) {
+        console.error("Error adding comment", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 
 module.exports = router;

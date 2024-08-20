@@ -240,50 +240,6 @@ router.post('/join-or-leave', async (req, res) => {
 });
 
 
-// router.post('/join-or-leave', async (req, res) => {
-//     const { communityId } = req.query;
-//     const userId = req.session.user._id;
 
-//     try {
-//         const userSubscribtions = await User.findOne({ _id: userId }).select('subscribedCommunities -_id').populate({ path: 'subscribedCommunities', select: '_id' })
-//         console.log(userSubscribtions)
-//         if (!userSubscribtions) return res.status(404).json({ error: "Error Fetching records" });
-
-
-
-//         let isSubscribed = userSubscribtions.subscribedCommunities.some(
-//             community => community._id.toString() === communityId
-//         );
-
-
-//         if (isSubscribed) {
-//             userSubscribtions.subscribedCommunities.pop(communityId)
-
-//             const community = await Community.findById({ _id: communityId })
-//             if (!community.members._id) return;
-
-//             const communityMember = await Members.findById({ _id: community.members._id })
-//             communityMember.members.pop(userId)
-//             community.totalMembers === 0 ? community.totalMembers = 0 : community.totalMembers -= 1
-//             communityMember.save()
-//         } else {
-//             userSubscribtions.subscribedCommunities.push(communityId)
-
-//             const community = await Community.findById({ _id: communityId })
-//             if (!community.members._id) return;
-
-//             const communityMember = await Members.findById({ _id: community.members._id })
-//             communityMember.members.push(userId)
-//             community.totalMembers += 1
-//             communityMember.save()
-//         }
-
-//         res.status(200).json({ message: isSubscribed })
-
-//     } catch (error) {
-//         console.error("Error in already get community", error.message)
-//         res.status(500).json({ error: "Internal Server Error" })
-//     }
-// })
 
 module.exports = router;
