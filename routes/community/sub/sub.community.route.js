@@ -8,7 +8,7 @@ const User = require("../../../models/user/user.model");
 const router = express.Router()
 
 //create a community from frontend
-router.post("/create", async (req, res) => {
+router.post("/create", async (req, res) => {// NOT BEING USED
     const { communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
     try {
@@ -46,7 +46,7 @@ router.post("/create", async (req, res) => {
         // community.moderators.push(creatorId)// redundant
 
         const members = await Members.create({
-            communityId: community._id,
+            communityId: subCommunity._id,
             members: [creatorId]
         })
         // members.members.push(creatorId) //redundant
@@ -62,7 +62,7 @@ router.post("/create", async (req, res) => {
         userFound.save()
 
 
-        res.status(200).json({ message: "Sub Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/sub/${subCommunity.name}` })
+        res.status(200).json({ message: "Sub Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/sub/${subCommunity.name}?isSubCommunity=true` })
 
 
     } catch (error) {
@@ -126,7 +126,7 @@ router.get('/user-subscribed', async (req, res) => {
 
 
         const subscribedCommunities = await User.findOne({ _id: userId }).select('subscribedSubCommunities').populate({ path: 'subscribedSubCommunities', select: 'name _id icon' })
-        // console.log(subscribedCommunities)
+        console.log(subscribedCommunities)
         if (!subscribedCommunities) return res.status(404).json({ error: "Error Fetching records" });
         res.status(200).json(subscribedCommunities);
 

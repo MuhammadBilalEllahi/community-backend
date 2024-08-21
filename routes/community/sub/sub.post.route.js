@@ -132,7 +132,7 @@ router.post("/create", async (req, res) => {
 
 
 
-        res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}` })
+        res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}?isSubCommunity=true` })
     } catch (error) {
         console.error("Error in creating post", error.message)
         res.status(500).json({ error: "Internal Server Error" })

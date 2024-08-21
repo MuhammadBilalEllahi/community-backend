@@ -62,7 +62,7 @@ router.post("/create", async (req, res) => {
         userFound.save()
 
 
-        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${community.name}` })
+        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${community.name}?isSubCommunity=false` })
 
 
     } catch (error) {
@@ -138,11 +138,11 @@ router.post("/create-sub", async (req, res) => {
         const postCollection = await PostsCollection.create({ _id: subCommunity._id })
         postCollection.save()
 
-        userFound.subscribedCommunities.push(subCommunity._id)
+        userFound.subscribedSubCommunities.push(subCommunity._id)
         userFound.save()
 
 
-        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${subCommunity.name}` })
+        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${subCommunity.name}?isSubCommunity=true` })
 
 
     } catch (error) {
