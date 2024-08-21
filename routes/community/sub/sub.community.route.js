@@ -217,7 +217,7 @@ router.post('/join-or-leave', async (req, res) => {
         if (!user) return res.status(404).json({ error: "User not found" });
 
         const subCommunity = await SubCommunity.findById(communityId).populate('members');
-        if (!community) return res.status(404).json({ error: "Community not found" });
+        if (!subCommunity) return res.status(404).json({ error: "Community not found" });
 
         const isSubscribed = user.subscribedSubCommunities.some(
             subCommunity => subCommunity.toString() === communityId
