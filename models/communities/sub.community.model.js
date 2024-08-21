@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 
-const communitySchema = new Schema({
+const subCommunitySchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -52,13 +52,27 @@ const communitySchema = new Schema({
     postsCollectionRef: {
         type: Schema.Types.ObjectId, ref: "PostsCollection"
     },
-
-    subCommunities: [{
+    parent: {
         type: Schema.Types.ObjectId,
-        ref: "SubCommunity",
+        ref: "Community",
 
-    }]
+    },
+
 });
 
-const Community = mongoose.model("Community", communitySchema);
-module.exports = Community;
+const SubCommunity = mongoose.model("SubCommunity", subCommunitySchema);
+module.exports = SubCommunity;
+
+// validate: {
+//     validator: function (value) {
+//         return !(value && value.length > 0 && this.parent)
+//     },
+//     message: "A community with sub-communities cannot have a parent."
+// }
+
+// validate: {
+//     validator: function (value) {
+//         return !(value && this.subCommunities && this.subCommunities.length > 0)
+//     },
+//     message: "A community with a parent cannot have sub-communities."
+// }

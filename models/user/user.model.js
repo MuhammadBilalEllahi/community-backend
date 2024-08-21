@@ -88,7 +88,7 @@ const userSchema = new mongoose.Schema({
     subscribedCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
 
 
-
+    subscribedSubCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubCommunity' }],
 
 
 

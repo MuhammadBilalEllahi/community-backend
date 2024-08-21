@@ -4,6 +4,7 @@ const Members = require("../../models/communities/members.model");
 const CommunityType = require("../../models/communities/communityType.model");
 const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
+const SubCommunity = require("../../models/communities/sub.community.model");
 const router = express.Router()
 
 //create a community from frontend
@@ -71,6 +72,109 @@ router.post("/create", async (req, res) => {
 });
 
 
+// create subcommuntiy in community
+router.post("/create-sub", async (req, res) => {
+    const { parentCommunityId, communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
+
+    try {
+        console.log("communityName", communityName, "\n",
+            "description", description, "\n",
+            "banner", banner, "\n",
+            "icon", icon, "\n",
+            "topics", topics,
+            "\n", "communityType", communityType,
+            "\n", "creator", creatorId,
+            "\n", "parentCommunityId", parentCommunityId)
+
+        const parentCommunity = await Community.findById({ _id: parentCommunityId })
+        if (!parentCommunity) return res.status(404).json({ error: "Does This Parent Communtiy Exists?" })
+
+        // const communityNameLowercased = communityName.toString().toLowerCase() //not using this
+
+        const isInCommunityCollection = await Community.findOne({ name: communityName })
+        if (isInCommunityCollection) return res.status(404).json({ error: "This Exists as Communtiy, can not add as Sub community " })
+
+
+        const existsInSubCommunity = await SubCommunity.findOne({ name: communityName })
+        if (existsInSubCommunity) return res.status(404).json({ error: "This  Sub-Communtiy Exists" })
+
+
+        const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
+        if (!communityTypeFound) return res.status(404).json({ error: "Not found Type" })
+
+
+        const userFound = await User.findById({ _id: creatorId })
+        if (!userFound) return res.status(404).json({ error: "Not found User" })
+
+        const subCommunity = await SubCommunity.create(
+            {
+                name: communityName,
+                description: description,
+                creator: creatorId,
+                banner: banner.preview,
+                icon: icon.preview,
+                topics: topics,
+                communityType: communityTypeFound._id,
+                totalMembers: 1,
+                moderators: [creatorId],
+                parent: parentCommunity._id
+            }
+        )
+
+
+
+        const members = await Members.create({
+            communityId: subCommunity._id,
+            members: [creatorId]
+        })
+
+        members.save()
+        subCommunity.members = members._id
+        subCommunity.save()
+
+        parentCommunity.subCommunities.push(subCommunity._id)
+        parentCommunity.save()
+
+        const postCollection = await PostsCollection.create({ _id: subCommunity._id })
+        postCollection.save()
+
+        userFound.subscribedCommunities.push(subCommunity._id)
+        userFound.save()
+
+
+        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${subCommunity.name}` })
+
+
+    } catch (error) {
+        console.error("Error while creating community", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+});
+
+//fecthes sub communities from community for sidebar, no need rn i think
+router.get('/sub-communities', async (req, res) => {
+    const { communityId } = req.params
+
+    try {
+        const subCommunities = await Community.findById({ _id: communityId })
+        if (!subCommunities) return res.status(404).json({ error: "Error Fetching records" });
+        res.status(200).json(subCommunities);
+
+    } catch (error) {
+        console.error("Error in already get community", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+})
+
+
+
+
+
+
+
+
+
+
 // checks if community name already exists while creating community
 router.get('/has-this-community', async (req, res) => {
     const { communityName } = req.query;
@@ -93,9 +197,7 @@ router.get('/has-this-community', async (req, res) => {
 router.get('/communities', async (req, res) => {
 
     try {
-
-
-        const communities = await Community.find()
+        const communities = await Community.find().populate('subCommunities')
         if (!communities) return res.status(404).json({ error: "Error Fetching records" });
         res.status(200).json(communities);
 

@@ -1,11 +1,11 @@
 const express = require("express");
-const Post = require("../../models/communities/post.model");
-const PostsCollection = require("../../models/communities/postsCollection.model");
-const User = require("../../models/user/user.model");
-const Community = require("../../models/communities/community.model");
-const PostComment = require("../../models/communities/postComment.model");
-const PostCommentCollection = require("../../models/communities/commentCollection");
-const CommunityPostAndCommentVote = require("../../models/communities/CommunityPostAndCommentVote.model");
+const Post = require("../../../models/communities/post.model");
+const SubCommunity = require("../../../models/communities/sub.community.model");
+const User = require("../../../models/user/user.model");
+const PostsCollection = require("../../../models/communities/postsCollection.model");
+const PostCommentCollection = require("../../../models/communities/commentCollection");
+const PostComment = require("../../../models/communities/postComment.model");
+const CommunityPostAndCommentVote = require("../../../models/communities/CommunityPostAndCommentVote.model");
 const router = express.Router()
 
 
@@ -68,7 +68,7 @@ router.post("/create", async (req, res) => {
     const { title, body, communityId, author } = req.body;
     // console.log({ title, body, communityId, author })
     try {
-        const communityExists = await Community.findById({ _id: communityId })
+        const communityExists = await SubCommunity.findById({ _id: communityId })
         if (!communityExists) return res.status(404).json({ error: "Error Occured Finding this Community" })
         // console.log(communityExists)
         const user = await User.findById({ _id: author })
