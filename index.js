@@ -129,9 +129,6 @@ app.use("/api/sub/post", protectRoute, subPostRouter)
 
 
 
-
-
-
 const startServer = () => {
     app.listen(PORT, () => {
         mongoDB()

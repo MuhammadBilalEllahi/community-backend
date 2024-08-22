@@ -5,13 +5,20 @@ const CommunityType = require("../../models/communities/communityType.model");
 const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const SubCommunity = require("../../models/communities/sub.community.model");
+const { upload } = require("../../utils/multer.util");
 const router = express.Router()
 
 //create a community from frontend
-router.post("/create", async (req, res) => {
+const cpUpload = upload.fields([{ name: 'banner', maxCount: 1 }, { name: 'icon', maxCount: 1 }])
+
+router.post("/create", cpUpload, async (req, res) => {
     const { communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
     try {
+
+        console.log(req.file)
+        console.log(req.body)
+
         // console.log("communityName", communityName, "\n",
         //     "description", description, "\n",
         //     "banner", banner, "\n",
@@ -19,7 +26,7 @@ router.post("/create", async (req, res) => {
         //     "topics", topics,
         //     "\n", "communityType", communityType,
         //     "\n", "creator", creatorId)
-
+        return;
 
         const communityNameLowercased = communityName.toString().toLowerCase()
         const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
@@ -70,6 +77,9 @@ router.post("/create", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" })
     }
 });
+
+
+
 
 
 // create subcommuntiy in community
