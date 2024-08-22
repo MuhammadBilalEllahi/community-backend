@@ -14,6 +14,7 @@ const mongoDB = require("./db/connect.mongodb.js")
 const session = require('express-session')
 const MongoStore = require('connect-mongo');
 const protectRoute = require('./middlewares/protectRoute.js')
+const path = require('path');
 // const RedisStore = require('connect-redis').default;
 // const redisClient = require("./db/reddis.js")
 // const Redis = require('ioredis');
@@ -94,6 +95,20 @@ const postRouter = require('./routes/community/post.route.js');
 const subCommunityRouter = require('./routes/community/sub/sub.community.route.js');
 const subPostRouter = require('./routes/community/sub/sub.post.route.js');
 // const membersRouter = require('./routes/community/members.route.js');
+
+
+app.use('/uploads/community', express.static(path.join(__dirname, '..', 'data', 'uploads', 'community')));
+app.get('/uploads/community/:communityId/:type/:filename', (req, res) => {
+    const { communityId, type, filename } = req.params;
+    const filePath = path.join(__dirname, 'data', 'uploads', 'community', communityId, type, filename);
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error('Error serving file:', err);
+            res.status(404).send('File not found');
+        }
+    });
+});
 
 
 app.use("/api/auth", authRouter)

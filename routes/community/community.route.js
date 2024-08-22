@@ -5,77 +5,86 @@ const CommunityType = require("../../models/communities/communityType.model");
 const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const SubCommunity = require("../../models/communities/sub.community.model");
-const { upload } = require("../../utils/multer.util");
+const { uploadCommunityImages, tempStore } = require("../../utils/multer.util");
 const router = express.Router()
 
-//create a community from frontend
-const cpUpload = upload.fields([{ name: 'banner', maxCount: 1 }, { name: 'icon', maxCount: 1 }])
+router.post("/create", async (req, res) => {
+    tempStore(req, res, async function (err) {
+        if (err) {
+            console.error("Multer error: ", err);
+            return res.status(500).json({ error: "File upload failed" });
+        }
 
-router.post("/create", cpUpload, async (req, res) => {
-    const { communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
+        try {
 
-    try {
+            const { communityName, description, topics, communityType, creatorId } = req.body;
 
-        console.log(req.file)
-        console.log(req.body)
-
-        // console.log("communityName", communityName, "\n",
-        //     "description", description, "\n",
-        //     "banner", banner, "\n",
-        //     "icon", icon, "\n",
-        //     "topics", topics,
-        //     "\n", "communityType", communityType,
-        //     "\n", "creator", creatorId)
-        return;
-
-        const communityNameLowercased = communityName.toString().toLowerCase()
-        const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
-        if (!communityTypeFound) return res.status(404).json({ error: "Not found Type" })
+            const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
+            if (!communityTypeFound) return res.status(404).json({ error: "Not found Type" })
 
 
-        const userFound = await User.findById({ _id: creatorId })
-        if (!userFound) return res.status(404).json({ error: "Not found User" })
+            const userFound = await User.findById({ _id: creatorId })
+            if (!userFound) return res.status(404).json({ error: "Not found User" })
 
-        const community = await Community.create(
-            {
-                name: communityNameLowercased,
-                description: description,
-                creator: creatorId,
-                banner: banner.preview,
-                icon: icon.preview,
-                topics: topics,
-                communityType: communityTypeFound._id,
-                totalMembers: 1,
-                moderators: [creatorId]
+            const community = await Community.create(
+                {
+                    name: communityName,
+                    description: description,
+                    creator: creatorId,
+                    topics: topics,
+                    communityType: communityTypeFound._id,
+                    totalMembers: 1,
+                    moderators: [creatorId]
+                }
+            )
+
+            // community.moderators.push(creatorId)// redundant
+
+            const members = await Members.create({
+                communityId: community._id,
+                members: [creatorId]
+            })
+            // members.members.push(creatorId) //redundant
+            members.save()
+            community.members = members._id
+            await community.save()
+
+
+            const postCollection = await PostsCollection.create({ _id: community._id })
+            postCollection.save()
+
+            userFound.subscribedCommunities.push(community._id)
+            userFound.save()
+
+
+            uploadCommunityImages(community._id, req.files)
+
+
+            const banner = req.files['banner'] ? req.files['banner'][0].filename : null;
+            const icon = req.files['icon'] ? req.files['icon'][0].filename : null;
+            console.log("\n banner ->", banner, "\n icon ->", icon)
+            if (banner) {
+                community.banner = `${process.env.BACKEND_URL}/uploads/community/${community._id}/banner/${banner}`;
             }
-        )
 
-        // community.moderators.push(creatorId)// redundant
-
-        const members = await Members.create({
-            communityId: community._id,
-            members: [creatorId]
-        })
-        // members.members.push(creatorId) //redundant
-        members.save()
-        community.members = members._id
-        community.save()
+            if (icon) {
+                community.icon = `${process.env.BACKEND_URL}/uploads/community/${community._id}/icon/${icon}`;
+            }
+            await community.save()
 
 
-        const postCollection = await PostsCollection.create({ _id: community._id })
-        postCollection.save()
-
-        userFound.subscribedCommunities.push(community._id)
-        userFound.save()
 
 
-        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${community.name}?isSubCommunity=false` })
+            res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${community.name}?isSubCommunity=false` })
 
 
-    } catch (error) {
-        console.error("Error while creating community", error.message)
-        res.status(500).json({ error: "Internal Server Error" })
-    }
+
+
+        } catch (error) {
+            console.error("Error while creating community", error.message)
+            res.status(500).json({ error: "Internal Server Error" })
+        }
+    })
 });
 
 
