@@ -5,7 +5,8 @@ const CommunityType = require("../../models/communities/communityType.model");
 const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const SubCommunity = require("../../models/communities/sub.community.model");
-const { uploadCommunityImages, tempStore } = require("../../utils/multer.util");
+const { tempStore } = require("../../utils/multer.util");
+const { uploadCommunityImages } = require("../../utils/aws.bucket.util");
 const router = express.Router()
 
 router.post("/create", async (req, res) => {
@@ -57,18 +58,19 @@ router.post("/create", async (req, res) => {
             userFound.save()
 
 
-            uploadCommunityImages(community._id, req.files)
+            // uploadCommunityImages(community._id, req.files)
+            const { bannerUrl, iconUrl } = await uploadCommunityImages(community._id, req.files);
 
 
-            const banner = req.files['banner'] ? req.files['banner'][0].filename : null;
-            const icon = req.files['icon'] ? req.files['icon'][0].filename : null;
-            console.log("\n banner ->", banner, "\n icon ->", icon)
-            if (banner) {
-                community.banner = `${process.env.BACKEND_URL}/uploads/community/${community._id}/banner/${banner}`;
+            // const banner = req.files['banner'] ? req.files['banner'][0].filename : null;
+            // const icon = req.files['icon'] ? req.files['icon'][0].filename : null;
+            console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
+            if (bannerUrl) {
+                community.banner = bannerUrl
             }
 
-            if (icon) {
-                community.icon = `${process.env.BACKEND_URL}/uploads/community/${community._id}/icon/${icon}`;
+            if (iconUrl) {
+                community.icon = iconUrl
             }
             await community.save()
 
