@@ -86,13 +86,13 @@ router.post("/create", async (req, res) => {// NOT BEING USED
 
 
 // checks if community name already exists while creating community
-router.get('/has-this-community', async (req, res) => {
-    const { communityName } = req.query;
+router.get('/has-this-sub-community', async (req, res) => {
+    const { communityName, parentId } = req.query;
     try {
 
-        // console.log("This is ", communityName)
+        console.log("This is ", communityName, parentId)
         // const communityNameLowercased = communityName.toString().toLowerCase()
-        const communityExists = await SubCommunity.findOne({ name: communityName })
+        const communityExists = await SubCommunity.findOne({ name: communityName }).where({ parent: parentId })
         if (communityExists) return res.status(200).json({ exists: true });
         res.status(200).json({ exists: false });
 

@@ -35,7 +35,7 @@ const uploadToS3 = async (filePath, bucketName, key, ContentType) => {
             Key: key,
             Body: fileContent,
             ContentType: ContentType,
-            ACL: "public-read-write"
+            ACL: "public-read-write" //give ACL access in aws website
         };
 
         const command = new PutObjectCommand(params);
@@ -69,12 +69,45 @@ const uploadCommunityImages = async (communityId, files) => {
 
         return { bannerUrl, iconUrl };
     } catch (error) {
-        console.error('Error uploading images to S3:', error);
+        console.error('Error uploading images to S3 by CommunityImages:', error);
         throw error;
     }
 };
 
-module.exports = { uploadCommunityImages };
+
+
+
+
+
+
+const uploadSubCommunityImages = async (subCommunityId, files) => {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    try {
+        let bannerUrl = null;
+        let iconUrl = null;
+
+        if (files['banner']) {
+            const bannerFile = files['banner'][0];
+            const bannerKey = `sub_community/${subCommunityId}/banner/${Date.now()}-${bannerFile.filename}`;
+            bannerUrl = await uploadToS3(bannerFile.path, bucketName, bannerKey, 'image/jpeg');
+        }
+
+        if (files['icon']) {
+            const iconFile = files['icon'][0];
+            const iconKey = `sub_community/${subCommunityId}/icon/${Date.now()}-${iconFile.filename}`;
+            iconUrl = await uploadToS3(iconFile.path, bucketName, iconKey, 'image/jpeg');
+        }
+
+        return { bannerUrl, iconUrl };
+    } catch (error) {
+        console.error('Error uploading images to S3 by SubCommunityImages:', error);
+        throw error;
+    }
+};
+
+
+module.exports = { uploadCommunityImages, uploadSubCommunityImages };
 
 
 

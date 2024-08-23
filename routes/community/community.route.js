@@ -6,7 +6,7 @@ const User = require("../../models/user/user.model");
 const PostsCollection = require("../../models/communities/postsCollection.model");
 const SubCommunity = require("../../models/communities/sub.community.model");
 const { tempStore } = require("../../utils/multer.util");
-const { uploadCommunityImages } = require("../../utils/aws.bucket.util");
+const { uploadCommunityImages, uploadSubCommunityImages } = require("../../utils/aws.bucket.util");
 const router = express.Router()
 
 router.post("/create", async (req, res) => {
@@ -95,81 +95,104 @@ router.post("/create", async (req, res) => {
 
 // create subcommuntiy in community
 router.post("/create-sub", async (req, res) => {
-    const { parentCommunityId, communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
-
-    try {
-        console.log("communityName", communityName, "\n",
-            "description", description, "\n",
-            "banner", banner, "\n",
-            "icon", icon, "\n",
-            "topics", topics,
-            "\n", "communityType", communityType,
-            "\n", "creator", creatorId,
-            "\n", "parentCommunityId", parentCommunityId)
-
-        const parentCommunity = await Community.findById({ _id: parentCommunityId })
-        if (!parentCommunity) return res.status(404).json({ error: "Does This Parent Communtiy Exists?" })
-
-        // const communityNameLowercased = communityName.toString().toLowerCase() //not using this
-
-        const isInCommunityCollection = await Community.findOne({ name: communityName })
-        if (isInCommunityCollection) return res.status(404).json({ error: "This Exists as Communtiy, can not add as Sub community " })
+    tempStore(req, res, async function (err) {
+        if (err) {
+            console.error("Multer error: ", err);
+            return res.status(500).json({ error: "File upload failed" });
+        }
 
 
-        const existsInSubCommunity = await SubCommunity.findOne({ name: communityName })
-        if (existsInSubCommunity) return res.status(404).json({ error: "This  Sub-Communtiy Exists" })
+
+        try {
+
+            const { parent, communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
 
-        const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
-        if (!communityTypeFound) return res.status(404).json({ error: "Not found Type" })
+            console.log("communityName", communityName, "\n",
+                "description", description, "\n",
+                "banner", banner, "\n",
+                "icon", icon, "\n",
+                "topics", topics,
+                "\n", "communityType", communityType,
+                "\n", "creator", creatorId,
+                "\n", "parent", parent)
+
+            const parentCommunity = await Community.findById({ _id: parent })
+            if (!parentCommunity) return res.status(404).json({ error: "Does This Parent Communtiy Exists?" })
+
+            // const communityNameLowercased = communityName.toString().toLowerCase() //not using this
+
+            const isInCommunityCollection = await Community.findOne({ name: communityName })
+            if (isInCommunityCollection) return res.status(404).json({ error: "This Exists as Communtiy, can not add as Sub community " })
 
 
-        const userFound = await User.findById({ _id: creatorId })
-        if (!userFound) return res.status(404).json({ error: "Not found User" })
+            const existsInSubCommunity = await SubCommunity.findOne({ name: communityName })
+            if (existsInSubCommunity) return res.status(404).json({ error: "This  Sub-Communtiy Exists" })
 
-        const subCommunity = await SubCommunity.create(
-            {
-                name: communityName,
-                description: description,
-                creator: creatorId,
-                banner: banner.preview,
-                icon: icon.preview,
-                topics: topics,
-                communityType: communityTypeFound._id,
-                totalMembers: 1,
-                moderators: [creatorId],
-                parent: parentCommunity._id
+
+            const communityTypeFound = await CommunityType.findOne({ communityType: communityType })
+            if (!communityTypeFound) return res.status(404).json({ error: "Not found Type" })
+
+
+            const userFound = await User.findById({ _id: creatorId })
+            if (!userFound) return res.status(404).json({ error: "Not found User" })
+
+            const subCommunity = await SubCommunity.create(
+                {
+                    name: communityName,
+                    description: description,
+                    creator: creatorId,
+                    topics: topics,
+                    communityType: communityTypeFound._id,
+                    totalMembers: 1,
+                    moderators: [creatorId],
+                    parent: parentCommunity._id
+                }
+            )
+
+
+
+            const members = await Members.create({
+                communityId: subCommunity._id,
+                members: [creatorId]
+            })
+
+            members.save()
+            subCommunity.members = members._id
+            subCommunity.save()
+
+            parentCommunity.subCommunities.push(subCommunity._id)
+            parentCommunity.save()
+
+            const postCollection = await PostsCollection.create({ _id: subCommunity._id })
+            postCollection.save()
+
+            userFound.subscribedSubCommunities.push(subCommunity._id)
+            userFound.save()
+
+
+            const { bannerUrl, iconUrl } = await uploadSubCommunityImages(subCommunity._id, req.files)
+            console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
+
+            if (bannerUrl) {
+                subCommunity.banner = bannerUrl
             }
-        )
+
+            if (iconUrl) {
+                subCommunity.icon = iconUrl
+            }
+
+            await subCommunity.save()
 
 
-
-        const members = await Members.create({
-            communityId: subCommunity._id,
-            members: [creatorId]
-        })
-
-        members.save()
-        subCommunity.members = members._id
-        subCommunity.save()
-
-        parentCommunity.subCommunities.push(subCommunity._id)
-        parentCommunity.save()
-
-        const postCollection = await PostsCollection.create({ _id: subCommunity._id })
-        postCollection.save()
-
-        userFound.subscribedSubCommunities.push(subCommunity._id)
-        userFound.save()
+            res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${subCommunity.name}?isSubCommunity=true` })
 
 
-        res.status(200).json({ message: "Community Created", redirect: `${process.env.G_REDIRECT_URI}/r/${subCommunity.name}?isSubCommunity=true` })
-
-
-    } catch (error) {
-        console.error("Error while creating community", error.message)
-        res.status(500).json({ error: "Internal Server Error" })
-    }
+        } catch (error) {
+            console.error("Error while creating community", error.message)
+            res.status(500).json({ error: "Internal Server Error" })
+        }
+    });
 });
 
 //fecthes sub communities from community for sidebar, no need rn i think
