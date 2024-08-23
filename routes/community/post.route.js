@@ -460,4 +460,21 @@ router.post("/get-post-votes", async (req, res) => {
 
 
 
+
+
+
+router.get('/get-random-community-and-sub-posts', async (req, res) => {
+
+    try {
+        const getCommunities = await Post.find({ createdAt: { $gte: new Date(new Date() - (4 * 24 * 60 * 60 * 1000)) } }).populate({
+            path: "community author",
+            select: "icon name username profilePic universityEmailVerified personalEmailVerified"
+        })
+        // console.log("GEt", getCommunities)
+        res.status(200).json(getCommunities)
+    } catch (error) {
+        console.error("Error message from /get-random-community-and-sub-posts: ", error.message)
+    }
+})
+
 module.exports = router;
