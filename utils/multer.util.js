@@ -55,7 +55,29 @@ const uploadCommunityImages = (communityId, files) => {
     });
 };
 
-module.exports = { uploadCommunityImages, tempStore }
+
+
+
+
+
+
+const tempStorePosts = multer({
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            const tempDir = path.join(__dirname, "..", 'data', 'uploads', 'temp', 'posts');
+            fs.mkdirSync(tempDir, { recursive: true });
+
+            return cb(null, tempDir)
+        },
+        filename: function (req, file, cb) {
+
+            return cb(null, `${Date.now()}-${file.fieldname}-${file.originalname}`);
+
+        }
+    })
+}).fields([{ name: 'media', maxCount: 1 }]);
+
+module.exports = { uploadCommunityImages, tempStore, tempStorePosts }
 
 
 

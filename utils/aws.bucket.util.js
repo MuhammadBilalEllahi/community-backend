@@ -48,6 +48,29 @@ const uploadToS3 = async (filePath, bucketName, key, ContentType) => {
     }
 };
 
+
+const uploadPostMedia = async (community_sub_com_id, files, req, isSubCommunity) => {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    try {
+        let mediaUrl = null;
+
+
+        if (files['media']) {
+            const mediaFile = files['media'][0];
+            console.log("This is media file: ", mediaFile)
+            const mediaKey = `${isSubCommunity ? 'sub_' : ''}community/${community_sub_com_id}/posts/${Date.now()}-${mediaFile.filename}`;
+            mediaUrl = await uploadToS3(mediaFile.path, bucketName, mediaKey, req.body.contentType);
+        }
+
+
+        return { mediaUrl };
+    } catch (error) {
+        console.error('Error uploading images to S3 by SubCommunityImages:', error);
+        throw error;
+    }
+};
+
 const uploadCommunityImages = async (communityId, files) => {
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
 
@@ -107,7 +130,12 @@ const uploadSubCommunityImages = async (subCommunityId, files) => {
 };
 
 
-module.exports = { uploadCommunityImages, uploadSubCommunityImages };
+
+
+
+
+
+module.exports = { uploadCommunityImages, uploadSubCommunityImages, uploadPostMedia };
 
 
 

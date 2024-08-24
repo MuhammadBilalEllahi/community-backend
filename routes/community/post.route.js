@@ -6,6 +6,8 @@ const Community = require("../../models/communities/community.model");
 const PostComment = require("../../models/communities/postComment.model");
 const PostCommentCollection = require("../../models/communities/commentCollection");
 const CommunityPostAndCommentVote = require("../../models/communities/CommunityPostAndCommentVote.model");
+const { tempStorePosts } = require("../../utils/multer.util");
+const { uploadPostMedia } = require("../../utils/aws.bucket.util");
 const router = express.Router()
 
 
@@ -65,79 +67,103 @@ router.get("/details/comments", async (req, res) => {
 
 //set latest post in community (unshift )
 router.post("/create", async (req, res) => {
-    const { title, body, communityId, author } = req.body;
-    // console.log({ title, body, communityId, author })
-    try {
-        const communityExists = await Community.findById({ _id: communityId })
-        if (!communityExists) return res.status(404).json({ error: "Error Occured Finding this Community" })
-        // console.log(communityExists)
-        const user = await User.findById({ _id: author })
-        if (!user) return res.status(404).json({ error: "Error Occured, Are you signed In?" })
-        // console.log(user)
-        const createPost = await Post.create(
-            {
-                title: title,
-                body: body,
-                community: communityId,
-                author: author
-            }
-        )
-        createPost.save()
-        // console.log(createPost)
-        if (communityId === author) {
-            return;
+
+
+    tempStorePosts(req, res, async function (err) {
+        if (err) {
+            console.error("Multer error: ", err);
+            return res.status(500).json({ error: "File upload failed" });
         }
-        const addToPostsCollection = await PostsCollection.findById({ _id: communityId })
-        if (!addToPostsCollection) return res.status(404).json({ error: "Error Occured, who delted post collection record" })
-
-        addToPostsCollection.posts.unshift({
-            postId: createPost._id,
-            title: title,
-            snippet: body,
-            author: user.name
-
-        })
-
-        addToPostsCollection.save()
-
-        const createCommentCollection = await PostCommentCollection.create({ _id: createPost._id })
-        createCommentCollection.save()
-
-        // console.log(addToPostsCollection)
-        // console.log(createCommentCollection)
 
 
-        const updatePostToAddCommentId = await Post.findByIdAndUpdate(createPost._id,
-            {
-                comments: createCommentCollection._id
-            },
-        )
-        // console.log("updatePostToAddCommentId", updatePostToAddCommentId)
+        try {
+            const { title, body, communityId, author, media, contentType } = req.body;
+            console.log("check ", req.body)
+            // return;
+
+            const communityExists = await Community.findById({ _id: communityId })
+            if (!communityExists) return res.status(404).json({ error: "Error Occured Finding this Community" })
+            // console.log(communityExists)
+            const user = await User.findById({ _id: author })
+            if (!user) return res.status(404).json({ error: "Error Occured, Are you signed In?" })
+            // console.log(user)
+            const createPost = await Post.create(
+                {
+                    title: title,
+                    body: body,
+                    community: communityId,
+                    author: author
+                }
+            )
+            createPost.save()
+            // console.log(createPost)
+            if (communityId === author) {
+                return;
+            }
+            const addToPostsCollection = await PostsCollection.findById({ _id: communityId })
+            if (!addToPostsCollection) return res.status(404).json({ error: "Error Occured, who delted post collection record" })
+
+            addToPostsCollection.posts.unshift({
+                postId: createPost._id,
+                title: title,
+                snippet: body,
+                author: user.name
+
+            })
+
+            addToPostsCollection.save()
+
+            const createCommentCollection = await PostCommentCollection.create({ _id: createPost._id })
+            createCommentCollection.save()
+
+            // console.log(addToPostsCollection)
+            // console.log(createCommentCollection)
+
+
+            const updatePostToAddCommentId = await Post.findByIdAndUpdate(createPost._id,
+                {
+                    comments: createCommentCollection._id
+                },
+            )
+            // console.log("updatePostToAddCommentId", updatePostToAddCommentId)
 
 
 
 
-        const voteCollection_create = await CommunityPostAndCommentVote.create({
-            postId: createPost._id
-        })
+            const voteCollection_create = await CommunityPostAndCommentVote.create({
+                postId: createPost._id
+            })
 
-        voteCollection_create.save()
-
-
-        const add_VoteCollection_ToPost = await Post.findById({ _id: createPost._id })
-        add_VoteCollection_ToPost.vote = voteCollection_create._id
-
-        add_VoteCollection_ToPost.save()
+            voteCollection_create.save()
 
 
+            const add_VoteCollection_ToPost = await Post.findById({ _id: createPost._id })
+            add_VoteCollection_ToPost.vote = voteCollection_create._id
+
+            add_VoteCollection_ToPost.save()
 
 
-        res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}` })
-    } catch (error) {
-        console.error("Error in creating post", error.message)
-        res.status(500).json({ error: "Internal Server Error" })
-    }
+            const { mediaUrl } = await uploadPostMedia(communityExists._id.toString(), req.files, req, false)
 
+            if (mediaUrl) {
+                createPost.media.type = contentType
+                createPost.media.url = mediaUrl
+                await createPost.save()
+                addToPostsCollection.posts.snippet = mediaUrl
+                await addToPostsCollection.save()
+            }
+
+
+            // console.log("\nThis is create POST: ", createPost)
+            // console.log("\nThis is create POST Collection: ", addToPostsCollection)
+
+
+            res.status(200).json({ message: "Post Created", redirect: `${process.env.G_REDIRECT_URI}/r/${communityExists.name}` })
+        } catch (error) {
+            console.error("Error in creating post", error.message)
+            res.status(500).json({ error: "Internal Server Error" })
+        }
+    })
 
 })
 
@@ -466,10 +492,12 @@ router.post("/get-post-votes", async (req, res) => {
 router.get('/get-random-community-and-sub-posts', async (req, res) => {
 
     try {
-        const getCommunities = await Post.find({ createdAt: { $gte: new Date(new Date() - (4 * 24 * 60 * 60 * 1000)) } }).populate({
+        const threeDaysAgo = new Date(new Date() - (3 * 24 * 60 * 60 * 1000));
+
+        const getCommunities = await Post.find({ createdAt: { $gte: threeDaysAgo } }).populate({
             path: "community author",
             select: "icon name username profilePic universityEmailVerified personalEmailVerified"
-        })
+        }).sort({ createdAt: -1 })//.limit(10)
         // console.log("GEt", getCommunities)
         res.status(200).json(getCommunities)
     } catch (error) {
