@@ -296,7 +296,14 @@ router.post('/posts', async (req, res) => {
     const { communityId } = req.body;
     // console.log("Community Id", communityId)
     try {
-        const postFromCommunities = await PostsCollection.findById({ _id: communityId }).select("posts").populate({ path: "posts.postId", select: "upvotes downvotes commentsCount" })
+        const postFromCommunities = await PostsCollection.findById({ _id: communityId }).select("posts")
+            .populate({
+                path: "posts.postId",
+                populate: {
+                    path: "author",
+                    select: 'name personalEmail personalEmailVerified universityEmail universityEmailVerified _id'
+                }
+            })
         console.log("Community posts", postFromCommunities)
         if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
 

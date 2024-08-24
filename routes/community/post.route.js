@@ -87,14 +87,22 @@ router.post("/create", async (req, res) => {
             const user = await User.findById({ _id: author })
             if (!user) return res.status(404).json({ error: "Error Occured, Are you signed In?" })
             // console.log(user)
-            const createPost = await Post.create(
+
+            const data = body ?
                 {
                     title: title,
                     body: body,
                     community: communityId,
                     author: author
                 }
-            )
+                :
+                {
+                    title: title,
+                    community: communityId,
+                    author: author
+                }
+
+            const createPost = await Post.create(data)
             createPost.save()
             // console.log(createPost)
             if (communityId === author) {
@@ -104,11 +112,7 @@ router.post("/create", async (req, res) => {
             if (!addToPostsCollection) return res.status(404).json({ error: "Error Occured, who delted post collection record" })
 
             addToPostsCollection.posts.unshift({
-                postId: createPost._id,
-                title: title,
-                snippet: body,
-                author: user.name
-
+                postId: createPost._id
             })
 
             addToPostsCollection.save()
@@ -149,8 +153,6 @@ router.post("/create", async (req, res) => {
                 createPost.media.type = contentType
                 createPost.media.url = mediaUrl
                 await createPost.save()
-                addToPostsCollection.posts.snippet = mediaUrl
-                await addToPostsCollection.save()
             }
 
 
