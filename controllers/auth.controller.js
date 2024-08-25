@@ -150,7 +150,7 @@ const updateInfoR = async (req, res) => {
 
         res.status(200).json({ message: "Success", token: jwtToken });
     } catch (error) {
-        console.log(
+        console.error(
             "Error in- signup-registered-student-updateInfo-controller: ",
             error.message
         );

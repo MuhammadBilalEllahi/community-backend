@@ -209,7 +209,7 @@ async function getUserData(access_token, user, req, res) {
             };
             req.session.save((err) => {
                 if (err) {
-                    console.log('Session save error:', err);
+                    console.error('Session save error:', err);
 
                 }
                 console.log("Session user in Longin Controller : ", req.session.user)
@@ -239,7 +239,7 @@ const generateUsernameFromEmail = async (emailPart) => {
     const username = `${cleanedEmailPart}_${uniqueSuffix}`;
 
     const userNameAlreadyCreated = await User.findOne({ username: username });
-    console.log(userNameAlreadyCreated)
+    // console.log(userNameAlreadyCreated)
     if (!userNameAlreadyCreated) return username;
 
     generateUsernameFromEmail(emailPart)
@@ -307,7 +307,7 @@ const getOAuthClient = async (req, res, next) => {
 
 
     } catch (err) {
-        console.log('Error logging in with OAuth2 user', err.message);
+        console.error('Error logging in with OAuth2 user', err.message);
         if (err.code !== 'ERR_HTTP_HEADERS_SENT') {
             res.status(500).json({ "error": err.message })
         }

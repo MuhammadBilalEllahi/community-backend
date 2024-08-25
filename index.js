@@ -179,8 +179,8 @@ io.on('connection', (socket) => {
 
 
         discussionUsers[discussionId].add(socket.id)
-        console.log(discussionUsers)
-        console.log(discussionUsers[discussionId].size)
+        // console.log(discussionUsers)
+        // console.log(discussionUsers[discussionId].size)
 
         io.to(discussionId).emit('users', discussionUsers)
         io.to(discussionId).emit('usersCount', discussionUsers[discussionId].size)

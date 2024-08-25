@@ -78,7 +78,7 @@ router.post("/create", async (req, res) => {
 
         try {
             const { title, body, communityId, author, media, contentType } = req.body;
-            console.log("check ", req.body)
+            // console.log("check ", req.body)
             // return;
 
             const communityExists = await Community.findById({ _id: communityId })

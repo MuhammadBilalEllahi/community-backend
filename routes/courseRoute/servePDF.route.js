@@ -12,7 +12,7 @@ router.get('/:year/:subject/:type/:filename', (req, res) => {
     fs.access(filePath, fs.constants.F_OK,
         (err) => {
             if (err) {
-                console.log('Error: File not found', err);
+                console.error('Error: File not found', err);
                 res.status(404).send('File not found');
                 return;
             }
@@ -22,7 +22,7 @@ router.get('/:year/:subject/:type/:filename', (req, res) => {
     const fileStream = fs.createReadStream(filePath)
 
     fileStream.on('error', (streamErr) => {
-        console.log('Error streaming the file:', streamErr);
+        console.error('Error streaming the file:', streamErr);
         res.status(500).send('Error reading the file');
     })
 

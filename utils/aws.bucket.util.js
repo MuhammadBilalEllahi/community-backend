@@ -58,7 +58,7 @@ const uploadPostMedia = async (community_sub_com_id, files, req, isSubCommunity)
 
         if (files['media']) {
             const mediaFile = files['media'][0];
-            console.log("This is media file: ", mediaFile)
+            // console.log("This is media file: ", mediaFile)
             const mediaKey = `${isSubCommunity ? 'sub_' : ''}community/${community_sub_com_id}/posts/${Date.now()}-${mediaFile.filename}`;
             mediaUrl = await uploadToS3(mediaFile.path, bucketName, mediaKey, req.body.contentType);
         }

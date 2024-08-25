@@ -64,7 +64,7 @@ router.post("/create", async (req, res) => {
 
             // const banner = req.files['banner'] ? req.files['banner'][0].filename : null;
             // const icon = req.files['icon'] ? req.files['icon'][0].filename : null;
-            console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
+            // console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
             if (bannerUrl) {
                 community.banner = bannerUrl
             }
@@ -108,14 +108,14 @@ router.post("/create-sub", async (req, res) => {
             const { parent, communityName, description, banner, icon, topics, communityType, creatorId } = req.body;
 
 
-            console.log("communityName", communityName, "\n",
-                "description", description, "\n",
-                "banner", banner, "\n",
-                "icon", icon, "\n",
-                "topics", topics,
-                "\n", "communityType", communityType,
-                "\n", "creator", creatorId,
-                "\n", "parent", parent)
+            // console.log("communityName", communityName, "\n",
+            //     "description", description, "\n",
+            //     "banner", banner, "\n",
+            //     "icon", icon, "\n",
+            //     "topics", topics,
+            //     "\n", "communityType", communityType,
+            //     "\n", "creator", creatorId,
+            //     "\n", "parent", parent)
 
             const parentCommunity = await Community.findById({ _id: parent })
             if (!parentCommunity) return res.status(404).json({ error: "Does This Parent Communtiy Exists?" })
@@ -172,7 +172,7 @@ router.post("/create-sub", async (req, res) => {
 
 
             const { bannerUrl, iconUrl } = await uploadSubCommunityImages(subCommunity._id, req.files)
-            console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
+            // console.log("\n banner ->", bannerUrl, "\n icon ->", iconUrl)
 
             if (bannerUrl) {
                 subCommunity.banner = bannerUrl
@@ -304,12 +304,12 @@ router.post('/posts', async (req, res) => {
                     select: 'name personalEmail personalEmailVerified universityEmail universityEmailVerified _id'
                 }
             })
-        console.log("Community posts", postFromCommunities)
+        // console.log("Community posts", postFromCommunities)
         if (!postFromCommunities) return res.status(404).json({ error: "Error Fetching records" });
 
         // const sortedPosts = postFromCommunities.posts.sort((a, b) => (new Date(a.createdAt) - new Date(b.createdAt))); // old first 
         const sortedPosts = postFromCommunities.posts.sort((a, b) => (new Date(b.createdAt) - new Date(a.createdAt))); //latest first
-        console.log("Community posts", sortedPosts)
+        // console.log("Community posts", sortedPosts)
 
 
         res.status(200).json(sortedPosts);
