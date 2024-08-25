@@ -497,7 +497,7 @@ router.get('/get-random-community-and-sub-posts', async (req, res) => {
         const threeDaysAgo = new Date(new Date() - (3 * 24 * 60 * 60 * 1000));
 
         const getCommunities = await Post.find({ createdAt: { $gte: threeDaysAgo } }).populate({
-            path: "community author",
+            path: "community subCommunity author",
             select: "icon name username profilePic universityEmailVerified personalEmailVerified"
         }).sort({ createdAt: -1 })//.limit(10)
         // console.log("GEt", getCommunities)

@@ -7,6 +7,7 @@ const PostCommentCollection = require("../../../models/communities/commentCollec
 const PostComment = require("../../../models/communities/postComment.model");
 const CommunityPostAndCommentVote = require("../../../models/communities/CommunityPostAndCommentVote.model");
 const { uploadPostMedia } = require("../../../utils/aws.bucket.util");
+const { tempStorePosts } = require("../../../utils/multer.util");
 const router = express.Router()
 
 
@@ -76,7 +77,7 @@ router.post("/create", async (req, res) => {
 
 
         try {
-            const { title, body, communityId, author } = req.body;
+            const { title, body, communityId, author, contentType } = req.body;
             // console.log(req.body)
             const communityExists = await SubCommunity.findById({ _id: communityId })
             if (!communityExists) return res.status(404).json({ error: "Error Occured Finding this Community" })
@@ -89,13 +90,13 @@ router.post("/create", async (req, res) => {
                 {
                     title: title,
                     body: body,
-                    community: communityId,
+                    subCommunity: communityId,
                     author: author
                 }
                 :
                 {
                     title: title,
-                    community: communityId,
+                    subCommunity: communityId,
                     author: author
                 }
 
