@@ -16,7 +16,7 @@ const postSchema = new Schema({
     media: {
         type: {
             type: String,
-            enum: ["image", "video", "video/*", "video/mp4", "link", "text", "image/jpeg", "image/png", "image/*"],
+            enum: ["image", "video", "video/*", "video/mp4", "link", "text", "image/jpeg", "image/png", "image/gif", "image/*"],
             default: "text",
         },
         url: { type: String, default: "" },

@@ -296,6 +296,18 @@ router.post('/posts', async (req, res) => {
     const { communityId } = req.body;
     // console.log("Community Id", communityId)
     try {
+        const checkIfComIsPrivate = await Community.findById(communityId)
+            .select('communityType').populate('communityType', 'communityType')
+        console.log(checkIfComIsPrivate.communityType.communityType)
+
+        if (checkIfComIsPrivate.communityType.communityType === 'private') {
+            const members = await Members.findOne({ communityId: communityId }).select('members')
+            if (!members.members.some(mem => mem.equals(req.session.user._id))) {
+                // console.log("is not member")
+                return res.status(204).json({ message: 'Join This Private Community Now' })
+            }
+        }
+
         const postFromCommunities = await PostsCollection.findById({ _id: communityId }).select("posts")
             .populate({
                 path: "posts.postId",

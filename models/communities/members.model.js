@@ -6,7 +6,7 @@ const membersSchema = new Schema({
 
     communityId: { type: mongoose.Schema.Types.ObjectId, ref: 'Community', required: true },
 
-    members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }],
 
 });
 
