@@ -13,14 +13,14 @@ const postSchema = new Schema({
     downvotes: { type: Number, default: 0 },
     vote: { type: mongoose.Schema.Types.ObjectId, ref: "CommunityPostAndCommentVote" },
     commentsCount: { type: Number, default: 0 },
-    media: {
+    media: [{
         type: {
             type: String,
             enum: ["image", "video", "video/*", "video/mp4", "link", "text", "image/jpeg", "image/png", "image/gif", "image/*"],
             default: "text",
         },
         url: { type: String, default: "" },
-    },
+    }],
     flair: { type: String, default: "" },
     comments: { type: Schema.Types.ObjectId, ref: "PostCommentCollection" },
 

@@ -17,6 +17,31 @@ const getSubjects = async (req, res) => {
     }
 
 }
+const getSubjectsByDepartmentId = async (req, res) => {
+    const { departmentId } = req.query;
+    console.log("departmentID", departmentId)
+    try {
+        const subjects = await Department.findById({ _id: departmentId }).populate({
+            path: "subjects",
+            select: '_id courseCode name',
+
+            populate: 'courseCode'
+        })
+        // .select("_id courseCode name")
+        // console.log("subjects", subjects)
+        // .select("_id courseCode name").populate('courseCode')
+        if (!subjects) return res.status(300).json({ message: "No Subject Found" })
+
+
+        res.status(200).json({ subjects })
+
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+
+}
+
+
 const getSubjectsByIdAndGetPDF = async (req, res) => {
     const { id } = req.params;
     try {
@@ -118,7 +143,8 @@ module.exports = {
     addSubject,
     addSubjects,
     addYearlyRecordFallAndSpring,
-    getSubjectsByIdAndGetPDF
+    getSubjectsByIdAndGetPDF,
+    getSubjectsByDepartmentId
 }
 
 

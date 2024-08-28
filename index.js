@@ -34,7 +34,7 @@ const sessionData = session({
     resave: process.env.RESAVE === 'true',
     saveUninitialized: process.env.SAVE_UNINTIALIZED === 'true',
     cookie: {
-        maxAge: 60 * 60 * 1000, // 1 hour
+        maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // true if HTTPS in production
         sameSite: process.env.NODE_ENV === 'production' && 'lax',
