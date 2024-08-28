@@ -8,6 +8,7 @@ const PostCommentCollection = require("../../models/communities/commentCollectio
 const CommunityPostAndCommentVote = require("../../models/communities/CommunityPostAndCommentVote.model");
 const { tempStorePosts } = require("../../utils/multer.util");
 const { uploadPostMedia } = require("../../utils/aws.bucket.util");
+const mongoose = require("mongoose");
 const router = express.Router()
 
 
