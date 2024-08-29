@@ -14,13 +14,36 @@ const s3Client = new S3Client({
     }
 });
 
-router.get('/:department/:courseId/:year/:subject/:type/:scheme/:filename', async (req, res) => {
-    const { department, courseId, year, subject, type, scheme, filename } = req.params;
-    console.log("Data: ", department, courseId, year, subject, type, scheme, filename)
-    console.log("URl to fetch ", `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`)
+
+// const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
+
+// const s3Params = {
+//     Bucket: process.env.AWS_S3_BUCKET_NAME,
+//     Prefix: 'pastpapers/Computer Science/CSC462/Artificial Intelligence/SP24/FINAL/THEORY/SP24-AI-FINAL.pdf'
+// };
+
+// const f = async () => {
+//     try {
+//         const command = new ListObjectsV2Command(s3Params);
+//         const data = await s3Client.send(command);
+//         // console.log('S3 Files:', data.Contents);
+//     } catch (err) {
+//         console.error('Error listing S3 objects:', err);
+//     }
+
+// }
+// f()
+
+router.get('/:department/:courseId/:subject/:year/:type/:scheme/:filename', async (req, res) => {
+    const { department, courseId, subject, year, type, scheme, filename } = req.params;
+    // console.log("Data: ", department, courseId, subject, year, type, scheme, filename)
+    // console.log("URl to fetch ", `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`)
+    const key = `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`
+    key.replace('%20', ' ')
+    // console.log("replaced value: ", key)
     const s3Params = {
         Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`
+        Key: key
     };
 
     try {
