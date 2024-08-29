@@ -16,8 +16,10 @@ const s3Client = new S3Client({
 
 router.get('/:department/:courseId/:year/:subject/:type/:scheme/:filename', async (req, res) => {
     const { department, courseId, year, subject, type, scheme, filename } = req.params;
+    console.log("Data: ", department, courseId, year, subject, type, scheme, filename)
+    console.log("URl to fetch ", `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`)
     const s3Params = {
-        Bucket: process.env.AWS_S3_BUCKET,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: `pastpapers/${department}/${courseId}/${subject}/${year}/${type}/${scheme}/${filename}`
     };
 
