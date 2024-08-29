@@ -108,7 +108,7 @@ app.use('/api/teachers', protectRoute, teacherRoute);
 app.use("/api/department", protectRoute, departmentRouter)
 app.use("/api/course", protectRoute, courseRouter)
 app.use("/api/subject", protectRoute, subjectRouter)
-app.use("/api/pastpapers", protectRoute, servePDFRouter)
+app.use("/api/pastpapers", servePDFRouter)
 
 app.use("/api/discussion", protectRoute, discussionRouter)
 app.use("/api/comment", protectRoute, commentRouter)
