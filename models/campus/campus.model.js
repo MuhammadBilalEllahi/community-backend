@@ -6,7 +6,9 @@ const campusSchema = new Schema({
         type: String,
         enum: ['Lahore', 'Abbottabad', 'Vehari', 'Islamabad'],
     },
-    campusTeachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }]
+    campusTeachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }],
+    communities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
+    subCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubCommunity' }],
 })
 
 const Campus = mongoose.model("Campus", campusSchema)

@@ -177,7 +177,7 @@ const teacherSpeficicInfo = async (req, res) => {
         // console.log(teacher)
         res.status(200).json(teacher);
     } catch (error) {
-        console.log("Error In teacherSpeficicInfo", { message: "Server error", error: error.message })
+        console.error("Error In teacherSpeficicInfo", { message: "Server error", error: error.message })
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }

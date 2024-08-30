@@ -29,7 +29,7 @@ const signupR = async (req, res) => {
 
             const val = matchedDomain.replace('cui', '')
             resultantLocation = val.charAt(0).toUpperCase() + val.slice(1)
-            console.log("Matched Domain:", resultantLocation);
+            // console.log("Matched Domain:", resultantLocation);
         }
 
 
@@ -253,7 +253,7 @@ const login = async (req, res) => {
         // console.log("The session data is ", req.session)
         req.session.save((err) => {
             if (err) {
-                console.log('Session save error:', err);
+                console.error('Session save error:', err);
                 return res.status(500).json({ error: "Internal Server Error" });
             }
             // console.log("Session user in Longin Controller : ", req.session.user)

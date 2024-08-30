@@ -7,6 +7,7 @@ const PostsCollection = require("../../models/communities/postsCollection.model"
 const SubCommunity = require("../../models/communities/sub.community.model");
 const { tempStore } = require("../../utils/multer.util");
 const { uploadCommunityImages, uploadSubCommunityImages } = require("../../utils/aws.bucket.util");
+const Campus = require("../../models/campus/campus.model");
 const router = express.Router()
 
 router.post("/create", async (req, res) => {
@@ -241,15 +242,32 @@ router.get('/has-this-community', async (req, res) => {
 router.get('/communities', async (req, res) => {
 
     try {
-        const communities = await Community.find().populate('subCommunities')
+        // const communities = await Community.find().populate('subCommunities')
+        const communities =
+            await Campus.findOne({ location: req.session.user.profile.location })
+                .select('communities')
+                .populate('communities')
+                .populate({
+                    path: 'communities',
+                    populate: ['subCommunities']
+                })
+
+        // .populate({
+        //     path: 'communities.subCommunities',
+        //     populate: 'subCommunities'
+        // })
+
+        // console.log("Communities: ", communities.communities.map(t => t))
+
         if (!communities) return res.status(404).json({ error: "Error Fetching records" });
-        res.status(200).json(communities);
+        res.status(200).json(communities.communities);
 
     } catch (error) {
         console.error("Error in already get community", error.message)
         res.status(500).json({ error: "Internal Server Error" })
     }
 })
+
 
 //this get func, checks subscribed communities of user to post new content on any community
 router.get('/user-subscribed', async (req, res) => {
@@ -298,7 +316,7 @@ router.post('/posts', async (req, res) => {
     try {
         const checkIfComIsPrivate = await Community.findById(communityId)
             .select('communityType').populate('communityType', 'communityType')
-        console.log(checkIfComIsPrivate.communityType.communityType)
+        // console.log(checkIfComIsPrivate.communityType.communityType)
 
         if (checkIfComIsPrivate.communityType.communityType === 'private') {
             const members = await Members.findOne({ communityId: communityId }).select('members')

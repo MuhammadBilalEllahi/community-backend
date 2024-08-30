@@ -96,6 +96,7 @@ const subCommunityRouter = require('./routes/community/sub/sub.community.route.j
 const subPostRouter = require('./routes/community/sub/sub.post.route.js');
 // const membersRouter = require('./routes/community/members.route.js');
 
+const campusRouter = require('./routes/campus.route.js');
 
 
 
@@ -124,20 +125,22 @@ app.use("/api/sub/community", protectRoute, subCommunityRouter)
 app.use("/api/sub/post", protectRoute, subPostRouter)
 // app.use("/api/members", protectRoute, membersRouter)
 
+app.use("/api/campus", protectRoute, campusRouter)
+
 
 
 app.use('/uploads/community', express.static(path.join(__dirname, '..', 'data', 'uploads', 'community')));
-app.get('/uploads/community/:communityId/:type/:filename', (req, res) => {
-    const { communityId, type, filename } = req.params;
-    const filePath = path.join(__dirname, 'data', 'uploads', 'community', communityId, type, filename);
+// app.get('/uploads/community/:communityId/:type/:filename', (req, res) => {
+//     const { communityId, type, filename } = req.params;
+//     const filePath = path.join(__dirname, 'data', 'uploads', 'community', communityId, type, filename);
 
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            console.error('Error serving file:', err);
-            res.status(404).send('File not found');
-        }
-    });
-});
+//     res.sendFile(filePath, (err) => {
+//         if (err) {
+//             console.error('Error serving file:', err);
+//             res.status(404).send('File not found');
+//         }
+//     });
+// });
 
 
 

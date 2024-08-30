@@ -37,7 +37,7 @@ async function getUserData(access_token, user, req, res) {
 
             const val = matchedDomain.replace('cui', '')
             resultantLocation = val.charAt(0).toUpperCase() + val.slice(1)
-            console.log("Matched Domain:", resultantLocation);
+            // console.log("Matched Domain:", resultantLocation);
         }
 
         const beforeDomain = data.email.split("@")[0]
@@ -103,7 +103,7 @@ async function getUserData(access_token, user, req, res) {
             };
             req.session.save((err) => {
                 if (err) {
-                    console.log('Session save error:', err);
+                    console.error('Session save error:', err);
 
                 }
                 // console.log("Session user in Longin Controller : ", req.session.user)
@@ -164,7 +164,7 @@ async function getUserData(access_token, user, req, res) {
             };
             req.session.save((err) => {
                 if (err) {
-                    console.log('Session save error:', err);
+                    console.error('Session save error:', err);
 
                 }
                 // console.log("Session user in Longin Controller : ", req.session.user)
@@ -225,7 +225,7 @@ async function getUserData(access_token, user, req, res) {
                     console.error('Session save error:', err);
 
                 }
-                console.log("Session user in Longin Controller : ", req.session.user)
+                // console.log("Session user in Longin Controller : ", req.session.user)
 
             });
             // console.log("Personal Email Already Signed Up: ", response)
@@ -287,7 +287,7 @@ async function retryOAuth2ClientGetToken(oAuth2Client, code, retries = 2, delay 
             await oAuth2Client.setCredentials(r.tokens);
             return oAuth2Client.credentials;
         } catch (err) {
-            console.log(`Attempt ${i + 1} failed: ${err.message}`);
+            // console.debug(`Attempt ${i + 1} failed: ${err.message}`);
             if (i < retries - 1) {
                 await new Promise(resolve => setTimeout(resolve, delay));
             } else {
