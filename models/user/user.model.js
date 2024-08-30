@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema({
     profile: {
         bio: { type: String, default: '' },
         avatar: { type: String, default: '' },
-        location: { type: String, default: '' },
+        location: { type: String, enum: ['Lahore', 'Islamabad', 'Abbottabad', 'Vehari', 'Attock'] },
         website: { type: String, default: '' }
     },
 

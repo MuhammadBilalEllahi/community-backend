@@ -97,19 +97,32 @@ const get_a_TeacherReviews = async (req, res) => {
 
 
         const populatedRatings = await Promise.all(teacher.ratings.map(async (review) => {
-            const userVote = await UserVote.findOne({ reviewId: review._id, userId: review.userId._id });
-            // console.log(userVote)
-            const userIdData = review.userId ? {
-                "_id": review.userId._id,
-                "name": review.userId.name,
-                "personalEmail": review.userId.personalEmail,
-                "universityEmail": review.userId.universityEmail,
-                "profilePic": review.userId.profilePic,
-                "universityEmailVerified": review.userId.universityEmailVerified,
-                "personalEmailVerified": review.userId.personalEmailVerified
-            } : null;
+            let userIdData;
+            if (review.userId) {
+                userIdData = {
+                    "_id": review.userId._id,
+                    "name": review.userId.name,
+                    "personalEmail": review.userId.personalEmail,
+                    "universityEmail": review.userId.universityEmail,
+                    "profilePic": review.userId.profilePic,
+                    "universityEmailVerified": review.userId.universityEmailVerified,
+                    "personalEmailVerified": review.userId.personalEmailVerified
+                };
+            } else {
+                userIdData = {
+                    "_id": null,
+                    "name": "[deleted]",
+                    "personalEmail": '[deleted]',
+                    "universityEmail": '[deleted]',
+                    "profilePic": '[deleted]',
+                    "universityEmailVerified": false,
+                    "personalEmailVerified": false
+                };
+            }
 
-            // console.log("HIDE USER: ", review.hideUser)
+
+            const userVote = await UserVote.findOne({ reviewId: review._id, userId: review.userId?._id });
+
 
             return {
                 rating: review.rating,

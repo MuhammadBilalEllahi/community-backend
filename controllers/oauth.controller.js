@@ -29,6 +29,17 @@ async function getUserData(access_token, user, req, res) {
         if (!(universityEmailRegex.test(data.email))) {
             return res.status(422).json({ message: "Only Organizational Accounts are Allowed to Signup \nor Signup on /register/student-type" })
         }
+
+        const emailDomainMatch = data.email.match(new RegExp(`@(${domainPattern})\\.edu\\.pk$`));
+        let resultantLocation = ''
+        if (emailDomainMatch) {
+            const matchedDomain = emailDomainMatch[1];
+
+            const val = matchedDomain.replace('cui', '')
+            resultantLocation = val.charAt(0).toUpperCase() + val.slice(1)
+            console.log("Matched Domain:", resultantLocation);
+        }
+
         const beforeDomain = data.email.split("@")[0]
         const emailDomain = data.email.split("@")[1]
 
@@ -52,7 +63,9 @@ async function getUserData(access_token, user, req, res) {
             google_EmailVerified: data.email_verified,
             username: username,
             universityEmailExpirationDate: universityEmailExpirationDate,
-
+            profile: {
+                location: resultantLocation
+            },
 
             access_token: user.access_token,
             token: user.id_token,

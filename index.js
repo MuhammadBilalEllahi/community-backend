@@ -241,3 +241,30 @@ app.use((err, req, res, next) => {
 // } else {
 //     startServer();
 // }
+
+
+
+
+
+
+
+// TEST
+// const mail = 'fa21-bcs-058@cuilahore.edu.pk'
+// const allowedDomains = ["cuilahore", "cuiislamabad", "cuiabbottabad"];
+// const domainPattern = allowedDomains.join('|');
+// const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
+
+
+// if (!(universityEmailRegex.test(mail))) {
+//     return res.status(422).json({ message: "Only Organizational Accounts are Allowed to Signup \nor Signup on /register/student-type" })
+// } else {
+
+//     const emailDomainMatch = mail.match(new RegExp(`@(${domainPattern})\\.edu\\.pk$`));
+
+//     if (emailDomainMatch) {
+//         const matchedDomain = emailDomainMatch[1];
+//         const val = matchedDomain.replace('cui', '')
+//         const res = val.charAt(0).toUpperCase() + val.slice(1)
+//         console.log("Matched Domain:", res);
+//     }
+// }

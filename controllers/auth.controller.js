@@ -13,6 +13,28 @@ const signupR = async (req, res) => {
         if (user) return res.status(400).json({ error: "Invalid Keys" }); // do not tell user if such account already exists
         // fa21-bcs-058
 
+
+        const allowedDomains = ["cuilahore", "cuiislamabad", "cuiabbottabad"];
+        const domainPattern = allowedDomains.join('|');
+        const universityEmailRegex = new RegExp(`^(fa|sp)\\d{2}-(bcs|bse|baf|bai|bar|bba|bce|bch|bde|bec|bee|ben|bid|bmc|bph|bpy|bsm|bst|che|mel|pch|pcs|pec|pee|phm|pms|pmt|ppc|pph|pst|r06|rba|rch|rcp|rcs|rec|ree|rel|rms|rmt|rne|rph|rpm|rpy|rst)-\\d{3}@(${domainPattern})\\.edu\\.pk$`);
+
+        if (!(universityEmailRegex.test(universityEmail))) {
+            return res.status(422).json({ message: "Only Organizational Accounts are Allowed to Signup \nor Signup on /register/student-type" })
+        }
+
+        const emailDomainMatch = universityEmail.match(new RegExp(`@(${domainPattern})\\.edu\\.pk$`));
+        let resultantLocation = ''
+        if (emailDomainMatch) {
+            const matchedDomain = emailDomainMatch[1];
+
+            const val = matchedDomain.replace('cui', '')
+            resultantLocation = val.charAt(0).toUpperCase() + val.slice(1)
+            console.log("Matched Domain:", resultantLocation);
+        }
+
+
+
+
         const saltRound = await bcryptjs.genSalt(10);
         const hashedPassowrd = await bcryptjs.hash(
             universityEmailPassword,
@@ -23,6 +45,9 @@ const signupR = async (req, res) => {
             universityEmail: universityEmail,
             password: hashedPassowrd,
             username: username,
+            profile: {
+                location: resultantLocation
+            }
         });
 
         if (userCreate) {
