@@ -219,6 +219,17 @@ app.use((err, req, res, next) => {
 });
 
 
+// const Campus = require('./models/campus/campus.model.js');
+// const { setTimeout } = require("timers/promises");
+// const f = async () => {
+
+//     const campus = await Campus.findOne({ location: 'Lahore' }).populate('campusTeachers')
+//     console.log(campus)
+// }
+// setTimeout(() => {
+// f()
+// }, 5000)
+
 
 
 // startServer()
@@ -268,3 +279,13 @@ app.use((err, req, res, next) => {
 //         console.log("Matched Domain:", res);
 //     }
 // }
+
+
+
+// FIND TEACHERZ
+// const f=async()=>{
+
+//     const teachers =await Teacher.find().select('_id')
+//     console.log(teachers)
+//     }
+//     f()

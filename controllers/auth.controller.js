@@ -245,7 +245,8 @@ const login = async (req, res) => {
             name: user.name,
             email: user.universityEmail ? user.universityEmail : user.personalEmail,
             picture: user.profilePic,
-            username: user.username
+            username: user.username,
+            profile: user.profile
 
         };
 
@@ -283,7 +284,8 @@ const session = async (req, res) => {
             email: req.session.user.email,
             picture: req.session.user.picture,
             username: req.session.user.username,
-            token: req.session.user.token
+            token: req.session.user.token,
+            profile: req.session.user.profile
         });
 
 

@@ -3,6 +3,7 @@ const TeacherRating = require("../models/teacher/rating.model");
 const Teacher = require("../models/teacher/teacher.model");
 const User = require("../models/user/user.model");
 const UserVote = require("../models/voter/vote.model");
+const Campus = require("../models/campus/campus.model");
 
 const allTeachers = async (req, res) => {
     try {
@@ -165,14 +166,19 @@ const getTeacherReviews = async (req, res) => {
 const teacherSpeficicInfo = async (req, res) => {
     const { id } = req.query;
     try {
-        const teacher = await Teacher.findById(id);
+        const teacher = await Teacher.findById(id).populate({
+            path: 'location',
+            populate: 'location',
+            select: 'location'
+        });
         if (!teacher) {
-            return res.status(404).json({ message: "Teacher not found" });
+            return res.status(404).json({ message: "Teacher not found" })
         }
         // console.log(teacher)
         res.status(200).json(teacher);
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: err.message });
+        console.log("Error In teacherSpeficicInfo", { message: "Server error", error: error.message })
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 }
 
@@ -276,7 +282,31 @@ const deleteReview = async (req, res) => {
     }
 }
 
+const getTeacherByCampusLocation = async (req, res) => {
+    const { location } = req.body;
+    // console.log("Location ", location)
+    try {
+        const campusTeachers = await Campus.findOne({ location: location }).populate('campusTeachers')
+        // console.log("check", campusTeachers)
+        if (!campusTeachers) return res.status(404).json({ error: "No Teachers in This Campus or Invalid Key" })
+        res.status(200).json({ teachers: campusTeachers })
+    } catch (error) {
 
+        console.error("Error selecting teachers by campus:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+}
+
+module.exports = {
+    allTeachers,
+    rateATeacher,
+    getTeacherReviews,
+    get_a_TeacherReviews,
+    teacherSpeficicInfo,
+    updateReviewVote,
+    deleteReview,
+    getTeacherByCampusLocation
+};
 
 // const updateReviewVote = async (req, res) => {
 //     const { reviewId, userId, voteType } = req.body;
@@ -367,12 +397,3 @@ const deleteReview = async (req, res) => {
 
 
 
-module.exports = {
-    allTeachers,
-    rateATeacher,
-    getTeacherReviews,
-    get_a_TeacherReviews,
-    teacherSpeficicInfo,
-    updateReviewVote,
-    deleteReview
-};
