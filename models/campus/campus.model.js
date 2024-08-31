@@ -1,15 +1,19 @@
 const mongoose = require('mongoose')
-const Schema = mongoose.Schema;
+const { Schema, model } = mongoose;
 
 const campusSchema = new Schema({
     location: {
         type: String,
-        enum: ['Lahore', 'Abbottabad', 'Vehari', 'Islamabad'],
+        enum: ['Lahore', 'Abbottabad', 'Vehari', 'Islamabad', 'All'],
     },
-    campusTeachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }],
-    communities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
-    subCommunities: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubCommunity' }],
+    campusTeachers: [{ type: Schema.Types.ObjectId, ref: 'Teacher' }],
+    communities: [{ type: Schema.Types.ObjectId, ref: 'Community' }],
+    subCommunities: [{ type: Schema.Types.ObjectId, ref: 'SubCommunity' }],
+    posts: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Post'
+    }]//should only be according to Location
 })
 
-const Campus = mongoose.model("Campus", campusSchema)
+const Campus = model("Campus", campusSchema)
 module.exports = Campus;

@@ -1,8 +1,8 @@
 const express = require("express");
 const CommunityType = require("../../../models/communities/communityType.model");
-const SubCommunity = require("../../../models/communities/sub.community.model");
+const SubCommunity = require("../../../models/communities/sub/sub.community.model");
 const Members = require("../../../models/communities/members.model");
-const PostsCollection = require("../../../models/communities/postsCollection.model");
+const PostsCollection = require("../../../models/communities/posts/postsCollection.model");
 const User = require("../../../models/user/user.model");
 
 const router = express.Router()

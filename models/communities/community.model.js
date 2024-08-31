@@ -57,7 +57,12 @@ const communitySchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "SubCommunity",
 
-    }]
+    }],
+    location: {
+        type: Schema.Types.ObjectId,
+        ref: 'Campus',
+        required: true
+    }
 });
 
 const Community = mongoose.model("Community", communitySchema);

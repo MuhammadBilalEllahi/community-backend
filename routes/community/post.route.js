@@ -1,11 +1,11 @@
 const express = require("express");
-const Post = require("../../models/communities/post.model");
-const PostsCollection = require("../../models/communities/postsCollection.model");
+const Post = require("../../models/communities/posts/post.model");
+const PostsCollection = require("../../models/communities/posts/postsCollection.model");
 const User = require("../../models/user/user.model");
 const Community = require("../../models/communities/community.model");
-const PostComment = require("../../models/communities/postComment.model");
-const PostCommentCollection = require("../../models/communities/commentCollection");
-const CommunityPostAndCommentVote = require("../../models/communities/CommunityPostAndCommentVote.model");
+const PostComment = require("../../models/communities/posts/postComment.model");
+const PostCommentCollection = require("../../models/communities/posts/commentCollection");
+const CommunityPostAndCommentVote = require("../../models/communities/posts/vote/CommunityPostAndCommentVote.model");
 const { tempStorePosts } = require("../../utils/multer.util");
 const { uploadPostMedia } = require("../../utils/aws.bucket.util");
 const mongoose = require("mongoose");

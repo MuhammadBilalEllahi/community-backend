@@ -1,11 +1,11 @@
 const express = require("express");
-const Post = require("../../../models/communities/post.model");
-const SubCommunity = require("../../../models/communities/sub.community.model");
+const Post = require("../../../models/communities/posts/post.model");
+const SubCommunity = require("../../../models/communities/sub/sub.community.model");
 const User = require("../../../models/user/user.model");
-const PostsCollection = require("../../../models/communities/postsCollection.model");
-const PostCommentCollection = require("../../../models/communities/commentCollection");
-const PostComment = require("../../../models/communities/postComment.model");
-const CommunityPostAndCommentVote = require("../../../models/communities/CommunityPostAndCommentVote.model");
+const PostsCollection = require("../../../models/communities/posts/postsCollection.model");
+const PostCommentCollection = require("../../../models/communities/posts/commentCollection");
+const PostComment = require("../../../models/communities/posts/postComment.model");
+const CommunityPostAndCommentVote = require("../../../models/communities/posts/vote/CommunityPostAndCommentVote.model");
 const { uploadPostMedia } = require("../../../utils/aws.bucket.util");
 const { tempStorePosts } = require("../../../utils/multer.util");
 const router = express.Router()

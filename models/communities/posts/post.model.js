@@ -16,7 +16,7 @@ const postSchema = new Schema({
     media: [{
         type: {
             type: String,
-            enum: ["image", "video", "video/*", "video/mp4", "link", "text", "image/jpeg", "image/png", "image/gif", "image/*"],
+            enum: ["image", "video", "video/*", "video/mp4", "link", "text", "image/jpeg", "image/png", "image/gif", "image/*"],//add youtube url later
             default: "text",
         },
         url: { type: String, default: "" },
@@ -25,6 +25,12 @@ const postSchema = new Schema({
     comments: { type: Schema.Types.ObjectId, ref: "PostCommentCollection" },
 
     editedAt: { type: Date },
+
+    location: {
+        type: Schema.Types.ObjectId,
+        ref: 'Campus',
+        required: true
+    }
 },
     { timestamps: true }, {
 
